@@ -15,6 +15,8 @@ import javafx.scene.input.MouseEvent;
  */
 public interface Drawable {
 
+    double getZ();
+
     void draw(Viewer viewer);
 
     Reaction mouseMoved(MouseEvent mouseEvent);

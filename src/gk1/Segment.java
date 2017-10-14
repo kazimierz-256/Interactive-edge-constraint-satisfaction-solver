@@ -18,6 +18,7 @@ public class Segment {
         free
     }
     private segmentConstraint constraint = segmentConstraint.free;
+    private double constraintLength;
     private Vertex beginning;
     private Vertex end;
 
@@ -35,8 +36,21 @@ public class Segment {
         return constraint;
     }
 
-    public void setConstraint(segmentConstraint constraint) {
-        this.constraint = constraint;
+    public void makeFree() {
+        constraint = segmentConstraint.free;
+    }
+
+    public void makeHorizontal() {
+        constraint = segmentConstraint.horizontal;
+    }
+
+    public void makeVertical() {
+        constraint = segmentConstraint.vertical;
+    }
+
+    public void makeFixedLength(double length) {
+        constraint = segmentConstraint.fixedLength;
+        constraintLength = length;
     }
 
     public Vertex getBeginning() {
@@ -53,5 +67,9 @@ public class Segment {
 
     public void setEnd(Vertex end) {
         this.end = end;
+    }
+
+    public double getConstraintLength() {
+        return constraintLength;
     }
 }

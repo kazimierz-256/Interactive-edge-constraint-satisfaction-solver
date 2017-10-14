@@ -80,20 +80,6 @@ public class FXMLDocumentController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         GK1.model = new Model();
         GK1.viewer = new Viewer(drawing.getGraphicsContext2D(), 600, 600);
-        Polygon triangle = new Polygon("Chocolate triangle",
-                new Vertex(100, 100, true),
-                new Vertex(500, 200),
-                new Vertex(400, 300));
-
-        Polygon qudrilateral = new Polygon("Dusty airport",
-                new Vertex(10, 150, true),
-                new Vertex(50, 200.3),
-                new Vertex(400, 30, true),
-                new Vertex(200, 100));
-
-        GK1.model.registerDrawable(triangle);
-        GK1.model.registerDrawable(qudrilateral);
         GK1.model.draw(GK1.viewer);
     }
-
 }

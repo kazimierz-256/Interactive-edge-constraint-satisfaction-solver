@@ -16,6 +16,7 @@ public class Reaction {
     private boolean shouldRender;
     private boolean shouldChangeCursor;
     private Cursor desiredCursor;
+    private byte cursorPriority = 0;
 
     Reaction(boolean shouldRender, boolean shouldChangeCursor, Cursor desiredCursor) {
         this.shouldRender = shouldRender;
@@ -29,8 +30,8 @@ public class Reaction {
     }
 
     public void Merge(Reaction anotherReaction) {
-        if (anotherReaction.isShouldChangeCursor()) {
-            // verify priority...
+        if (anotherReaction.isShouldChangeCursor()
+                && this.cursorPriority <= anotherReaction.cursorPriority) {
             this.desiredCursor = anotherReaction.getDesiredCursor();
         }
         this.shouldRender |= anotherReaction.isShouldRender();
@@ -53,10 +54,6 @@ public class Reaction {
         return shouldChangeCursor;
     }
 
-    public void setShouldChangeCursor(boolean shouldChangeCursor) {
-        this.shouldChangeCursor = shouldChangeCursor;
-    }
-
     public Cursor getDesiredCursor() {
         return desiredCursor;
     }
@@ -64,5 +61,12 @@ public class Reaction {
     public void setDesiredCursor(Cursor desiredCursor) {
         this.desiredCursor = desiredCursor;
         this.shouldChangeCursor = true;
+
+        switch (desiredCursor.toString()) {
+            case "MOVE":
+
+                this.cursorPriority = 10;
+                break;
+        }
     }
 }

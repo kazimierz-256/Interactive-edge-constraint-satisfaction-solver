@@ -5,12 +5,14 @@
  */
 package gk1;
 
+import static java.lang.Math.sqrt;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javafx.event.ActionEvent;
 import javafx.scene.Cursor;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseEvent;
 
 /**
@@ -18,6 +20,11 @@ import javafx.scene.input.MouseEvent;
  * @author Kazimierz
  */
 public class Polygon implements Drawable {
+
+    @Override
+    public double getZ() {
+        return z;
+    }
 
     public enum ActionState {
         moving,
@@ -43,12 +50,13 @@ public class Polygon implements Drawable {
     private ArrayList<Vertex> vertices;
     private ArrayList<Segment> segments;
     private String name;
+    private double z;
 
-    public Polygon(String name, Vertex... vertices) {
-        this(name, new ArrayList<>(Arrays.asList(vertices)));
+    public Polygon(String name, double z, Vertex... vertices) {
+        this(name, z, new ArrayList<>(Arrays.asList(vertices)));
     }
 
-    public Polygon(String name, ArrayList<Vertex> vertices) {
+    public Polygon(String name, double z, ArrayList<Vertex> vertices) {
         if (vertices.size() < 3) {
             //throw new Exception("A polygon has to have at least three vertices.");
             return;
@@ -57,6 +65,7 @@ public class Polygon implements Drawable {
         this.name = name;
         this.vertices = new ArrayList<>();
         this.segments = new ArrayList<>();
+        this.z = z;
 
         vertices.forEach((vertex) -> {
             this.vertices.add(vertex.cloneWithoutSegments());
@@ -87,7 +96,7 @@ public class Polygon implements Drawable {
     private void makeBackupOfPolygon() {
         // be careful, line restrictions are not copied over
         // created lines will become loose!
-        backup = new Polygon(name, vertices);
+        backup = new Polygon(name, z, vertices);
     }
 
     @Override
@@ -165,14 +174,6 @@ public class Polygon implements Drawable {
         return true;
     }
 
-    //returns boolean in case the moving command did not succeed
-    public boolean moveVertex(Vertex vertex, Vertex targetVertex) {
-        // move relevant vertices, segments, or even the polygon itself
-        vertex.setX(targetVertex.getX());
-        vertex.setY(targetVertex.getY());
-        return true;
-    }
-
     private boolean isInsidePolygon(Vertex position) {
         // source: https://stackoverflow.com/questions/217578/how-can-i-determine-whether-a-2d-point-is-within-a-polygon/2922778#2922778
         boolean isInside = false;
@@ -219,56 +220,151 @@ public class Polygon implements Drawable {
 
         Vertex position = new Vertex(event.getX(), event.getY());
 
+        if (isInsidePolygon(position)) {
+            MenuItem menuItem = new MenuItem("Delete polygon");
+            menuItem.setOnAction((ActionEvent e) -> {
+                GK1.model.unregisterDrawable(this);
+                GK1.model.draw(GK1.viewer);
+            });
+            menuItems.add(menuItem);
+        }
+
+        // add segments contextmenu
         getNearbySegments(position).forEach((segment) -> {
-            // if close enough then add something to the contextmenu
-            // Line ...
-            // create new vertex
-            // add new constraint:
-            // fix length (then ask for length) (if possible)
-            // make horizontal (if possible)
-            // make vertical (if possible)
-            // move line fix length (then ask for length) (if possible)[optional]
             Menu menu = new Menu(String.format("Segment %s", segment.toString()));
+
+            // vertex in the middle
             MenuItem menuItem = new MenuItem("Add vertex in the middle");
             menuItem.setOnAction((ActionEvent e) -> {
-                System.out.println("adding vertex...");
+                addVertexInbetween(segment);
+                GK1.model.draw(GK1.viewer);
+            });
+            menu.getItems().add(menuItem);
+
+            // horizontal segment
+            menuItem = new MenuItem("Make horizontal");
+            menuItem.setOnAction((ActionEvent e) -> {
+                makeHorizontal(segment);
+                GK1.model.draw(GK1.viewer);
+            });
+            menu.getItems().add(menuItem);
+
+            // vertical segment
+            menuItem = new MenuItem("Make vertical");
+            menuItem.setOnAction((ActionEvent e) -> {
+                makeVertical(segment);
+                GK1.model.draw(GK1.viewer);
+            });
+            menu.getItems().add(menuItem);
+
+            // fixed length segment
+            menuItem = new MenuItem("Fix length");
+            menuItem.setOnAction((ActionEvent e) -> {
+                makeFixedLength(segment);
+                GK1.model.draw(GK1.viewer);
             });
             menu.getItems().add(menuItem);
 
             menuItems.add(menu);
         });
+
+        // add vertices contextmenu
         getNearbyVertices(position).forEach((vertex) -> {
-// Vertex (100, 200) make a mastermenu
-// add submenus: move, delete, make stiff [optional]
             Menu menu = new Menu(String.format("Vertex %s", vertex.toString()));
-            MenuItem menuItem = new MenuItem("Move vertex");
-            menuItem.setOnAction((ActionEvent e) -> {
-                System.out.println("moving...");
-            });
-            menu.getItems().add(menuItem);
+            MenuItem menuItem;
 
-            menuItem = new MenuItem("Remove");
-            menuItem.setOnAction((ActionEvent e) -> {
-                System.out.println("deleting...");
-            });
-            menu.getItems().add(menuItem);
+            // vertex removal
+            if (vertices.size() > 3) {
+                menuItem = new MenuItem("Remove");
+                menuItem.setOnAction((ActionEvent e) -> {
+                    removeVertex(vertex);
+                    GK1.model.draw(GK1.viewer);
+                });
+                menu.getItems().add(menuItem);
+            }
 
-            menuItem = new MenuItem("Toggle stiffness");
+            // toggle vertex stiffness
+            menuItem = new MenuItem(String.format(
+                    vertex.isFixed() ? "Unfreeze" : "Freeze"));
             menuItem.setOnAction((ActionEvent e) -> {
-                System.out.println("toggling...");
+                vertex.setFixed(!vertex.isFixed());
+                GK1.model.draw(GK1.viewer);
             });
             menu.getItems().add(menuItem);
 
             menuItems.add(menu);
         });
 
-        // check if inside polygon
-        // add ability to delete polygon, move polygon...
         return menuItems;
     }
 
     @Override
     public String toString() {
         return name;
+    }
+
+    public void removeVertex(Vertex vertex) {
+        Segment beginningSegment = vertex.getEndOfSegment();
+        Segment endSegment = vertex.getBeginningOfSegment();
+        endSegment.getEnd().setEndOfSegment(beginningSegment);
+        beginningSegment.setEnd(endSegment.getEnd());
+        vertices.remove(vertex);
+        segments.remove(endSegment);
+    }
+
+    public void addVertexInbetween(Segment segment) {
+        int segmentIndex = segments.indexOf(segment);
+        int vertexIndex = vertices.indexOf(segment.getBeginning());
+        double newX = segment.getBeginning().getX()
+                + (segment.getEnd().getX() - segment.getBeginning().getX()) / 2;
+        double newY = segment.getBeginning().getY()
+                + (segment.getEnd().getY() - segment.getBeginning().getY()) / 2;
+        Vertex newVertex = new Vertex(newX, newY);
+        Segment newSegment = new Segment(newVertex, segment.getEnd());
+        newVertex.setBeginningOfSegment(newSegment);
+        newVertex.setEndOfSegment(segment);
+        segment.getEnd().setEndOfSegment(newSegment);
+        segment.setEnd(newVertex);
+        segment.makeFree();
+        vertices.add(vertexIndex + 1, newVertex);
+        segments.add(segmentIndex + 1, newSegment);
+    }
+
+    public void makeHorizontal(Segment segment) {
+
+        // undone
+    }
+
+    public void makeVertical(Segment segment) {
+
+        // undone
+    }
+
+    public void makeFixedLength(Segment segment) {
+
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setHeaderText(String.format(
+                "Please enter the desired length of %s.\nCurrent length is about %2.1f",
+                segment.toString(), sqrt(Euclidean2dGeometry.getSquareLength(segment))));
+        dialog.setTitle("Fixing segment length");
+        dialog.showAndWait();
+        try {
+            double result = Double.parseDouble(dialog.getResult());
+            segment.makeFixedLength(result);
+        } catch (NullPointerException e) {
+
+        } catch (NumberFormatException e) {
+
+        }
+
+        // undone
+    }
+
+    //returns boolean in case the moving command did not succeed
+    public boolean moveVertex(Vertex vertex, Vertex targetVertex) {
+        // move relevant vertices, segments, or even the polygon itself
+        vertex.setX(targetVertex.getX());
+        vertex.setY(targetVertex.getY());
+        return true;
     }
 }

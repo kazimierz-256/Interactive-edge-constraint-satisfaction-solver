@@ -41,4 +41,10 @@ public class Euclidean2dGeometry {
             return sPerpX * sPerpX + sPerpY * sPerpY;
         }
     }
+
+    public static double getSquareLength(Segment segment) {
+        double dx = segment.getBeginning().getX() - segment.getEnd().getX();
+        double dy = segment.getBeginning().getY() - segment.getEnd().getY();
+        return dx * dx + dy * dy;
+    }
 }
