@@ -358,6 +358,7 @@ public class Polygon implements Drawable {
         }
 
         // implement approaching from both sides and choosing the best combination
+        // remember to set fixedLength inside the segment!
         // undone
     }
 
@@ -368,7 +369,7 @@ public class Polygon implements Drawable {
 
         ArrayList<Area> cAreas = new ArrayList<>();
         Segment cSegmentIterator = vertex.getBeginningOfSegment();
-        Area cLatestArea = point.generalize(cSegmentIterator.getConstraint());
+        Area cLatestArea = point.generalize(cSegmentIterator);
         cAreas.add(cLatestArea);
         int cBestFound = -1;
         Vertex cNext = cSegmentIterator.getEnd();
@@ -382,7 +383,7 @@ public class Polygon implements Drawable {
             for (int i = 2, max = vertices.size(); i < max; i++) {
 
                 cSegmentIterator = cNext.getBeginningOfSegment();
-                cLatestArea = cLatestArea.generalize(cSegmentIterator.getConstraint());
+                cLatestArea = cLatestArea.generalize(cSegmentIterator);
                 cAreas.add(cLatestArea);
                 cNext = cSegmentIterator.getEnd();
                 if (cLatestArea.isContaining(cNext)) {
@@ -398,7 +399,7 @@ public class Polygon implements Drawable {
 
         ArrayList<Area> ccAreas = new ArrayList<>();
         Segment ccSegmentIterator = vertex.getEndOfSegment();
-        Area ccLatestArea = point.generalize(ccSegmentIterator.getConstraint());
+        Area ccLatestArea = point.generalize(ccSegmentIterator);
         ccAreas.add(ccLatestArea);
         int ccBestFound = -1;
         Vertex ccNext = ccSegmentIterator.getBeginning();
@@ -412,7 +413,7 @@ public class Polygon implements Drawable {
             for (int i = 2, max = vertices.size(); i < max; i++) {
 
                 ccSegmentIterator = ccNext.getEndOfSegment();
-                ccLatestArea = ccLatestArea.generalize(ccSegmentIterator.getConstraint());
+                ccLatestArea = ccLatestArea.generalize(ccSegmentIterator);
                 ccAreas.add(ccLatestArea);
                 ccNext = ccSegmentIterator.getBeginning();
                 if (ccLatestArea.isContaining(ccNext)) {
@@ -432,6 +433,11 @@ public class Polygon implements Drawable {
             return false;
         }
 
+        // work my way back the chain...
+        //look for exact matches and correct vertices up the way twards the target!
+        //how cool is that?
+        //
+        // OTHERWISE
         // try to solve for nearest point and repeat the procedure with new target
 //        vertex.setX(targetVertex.getX());
 //        vertex.setY(targetVertex.getY());

@@ -21,12 +21,72 @@ public class Area {
         ring = new Ring(center, 0, 0);
     }
 
-    public Area generalize(Segment.segmentConstraint constraint) {
-        // anything + free = band
-        // ring + length = ring
-        // ring + horiz/vert = band
-        // band + length = band
-        // band + horiz/vert = band
+    public Area(Ring ring) {
+        this.ring = ring;
+    }
+
+    public Area(Band band) {
+        promotedToBand = true;
+        this.band = band;
+    }
+
+    public Area generalize(Segment segment) {
+        if (promotedToBand) {
+            switch (segment.getConstraint()) {
+                case free:
+                    return new Area(new Band(new Vertex(0, 0),
+                            Double.POSITIVE_INFINITY,
+                            Double.POSITIVE_INFINITY));
+                case horizontal:
+                    return new Area(new Band(band.getCenter(),
+                            Double.POSITIVE_INFINITY,
+                            band.getBandHeight()));
+                case vertical:
+                    return new Area(new Band(band.getCenter(),
+                            band.getBandWidth(),
+                            Double.POSITIVE_INFINITY));
+                case fixedLength:
+                    double width = band.getBandWidth()
+                            + segment.getConstraintLength();
+                    double height = band.getBandHeight()
+                            + segment.getConstraintLength();
+                    return new Area(new Band(band.getCenter(), width, height));
+            }
+        } else {
+            switch (segment.getConstraint()) {
+                case free:
+                    return new Area(new Band(new Vertex(0, 0),
+                            Double.POSITIVE_INFINITY,
+                            Double.POSITIVE_INFINITY));
+                case horizontal:
+                    return new Area(new Band(ring.getCenter(),
+                            Double.POSITIVE_INFINITY,
+                            ring.getLargerRadius()));
+                case vertical:
+                    return new Area(new Band(ring.getCenter(),
+                            ring.getLargerRadius(),
+                            Double.POSITIVE_INFINITY));
+                case fixedLength:
+                    if (promotedToBand) {
+                        double R = segment.getConstraintLength();
+                        double r = ring.getSmallerRadius();
+                        double d = ring.getLargerRadius();
+                        if (R < ring.getSmallerRadius()) {
+                            return new Area(new Ring(ring.getCenter(),
+                                    r - R, d + R));
+                        } else {
+                            if (R < r + d) {
+                                return new Area(new Ring(ring.getCenter(),
+                                        0, d + R));
+                            } else {
+                                return new Area(new Ring(ring.getCenter(),
+                                        R - d - r, d + R));
+                            }
+                        }
+                    }
+            }
+        }
+        // should never reach this line
         return null;
     }
 
@@ -40,6 +100,11 @@ public class Area {
             boolean insideOuterShell = Euclidean2dGeometry.getSquareDistance(ring.getCenter(), vertex) <= ring.getLargerRadius() * ring.getLargerRadius();
             return outsideInnerShell && insideOuterShell;
         }
+    }
+
+    public Vertex getClosestPoint(Vertex starting, Vertex target, Segment segment) {
+        //choose closest intersection to target
+        return null;
     }
 
     public Vertex getClosestPoint(Area areaToIntersect, Vertex target) {
