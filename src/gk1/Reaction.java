@@ -63,5 +63,6 @@ public class Reaction {
 
     public void setDesiredCursor(Cursor desiredCursor) {
         this.desiredCursor = desiredCursor;
+        this.shouldChangeCursor = true;
     }
 }

@@ -85,6 +85,8 @@ public class Polygon implements Drawable {
     }
 
     private void makeBackupOfPolygon() {
+        // be careful, line restrictions are not copied over
+        // created lines will become loose!
         backup = new Polygon(name, vertices);
     }
 
@@ -97,18 +99,22 @@ public class Polygon implements Drawable {
                 case movingVertex:
                     reaction.mergeShouldRender(
                             moveVertex(moveVertex, position));
+                    reaction.setDesiredCursor(Cursor.MOVE);
                     break;
                 case movingPolygon:
                     reaction.mergeShouldRender(
                             movePolygon(mouseEvent));
+                    reaction.setDesiredCursor(Cursor.CLOSED_HAND);
                     break;
                 default:
             }
         } else {
             // check if at least the cursor is above the polygon
             if (isInsidePolygon(position)) {
+                reaction.setDesiredCursor(Cursor.OPEN_HAND);
+            }
+            if (!getNearbyVertices(position).isEmpty()) {
                 reaction.setDesiredCursor(Cursor.MOVE);
-                reaction.setShouldChangeCursor(true);
             }
             return reaction;
         }
