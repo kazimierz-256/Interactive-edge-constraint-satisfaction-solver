@@ -1,5 +1,5 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
+ * To change this license header, choose License Headers in Projection Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -117,7 +117,7 @@ public class Area {
         }
     }
 
-    public ArrayList<Vertex> Project(Vertex vertex, Band band) {
+    public ArrayList<Vertex> Projection(Vertex vertex, Band band) {
 
         ArrayList<Vertex> list = new ArrayList<>();
         if (Double.isFinite(band.getBandWidth())) {
@@ -139,7 +139,7 @@ public class Area {
         return list;
     }
 
-    public ArrayList<Vertex> Project(Vertex vertex, Ring ring) {
+    public ArrayList<Vertex> Projection(Vertex vertex, Ring ring) {
         ArrayList<Vertex> list = new ArrayList<>();
         // danger if vertex is close to ring's center!
         double quotient = sqrt(Euclidean2dGeometry.getSquareDistance(vertex, ring.getCenter()));
@@ -173,7 +173,6 @@ public class Area {
         list.add(new Vertex(band.getCenter().getX() + band.getBandWidth(), y));
         list.add(new Vertex(band.getCenter().getX() - band.getBandWidth(), y));
         return list;
-
     }
 
     public ArrayList<Vertex> IntersectVertical(double x, Ring ring) {
@@ -184,19 +183,17 @@ public class Area {
         double underSqrt = zeroIfNegligible(
                 ring.getSmallerRadius() * ring.getSmallerRadius() - difX * difX);
         if (underSqrt >= 0) {
-            double y1 = ring.getCenter().getY() + sqrt(underSqrt);
-            double y2 = ring.getCenter().getY() - sqrt(underSqrt);
-            list.add(new Vertex(x, y1));
-            list.add(new Vertex(x, y2));
+            double sqrtResult = sqrt(underSqrt);
+            list.add(new Vertex(x, ring.getCenter().getY() + sqrtResult));
+            list.add(new Vertex(x, ring.getCenter().getY() - sqrtResult));
         }
 
         underSqrt = zeroIfNegligible(
                 ring.getLargerRadius() * ring.getLargerRadius() - difX * difX);
         if (underSqrt >= 0) {
-            double y1 = ring.getCenter().getY() + sqrt(underSqrt);
-            double y2 = ring.getCenter().getY() - sqrt(underSqrt);
-            list.add(new Vertex(x, y1));
-            list.add(new Vertex(x, y2));
+            double sqrtResult = sqrt(underSqrt);
+            list.add(new Vertex(x, ring.getCenter().getY() + sqrtResult));
+            list.add(new Vertex(x, ring.getCenter().getY() - sqrtResult));
         }
 
         return list;
@@ -210,25 +207,23 @@ public class Area {
         double underSqrt = zeroIfNegligible(
                 ring.getSmallerRadius() * ring.getSmallerRadius() - difY * difY);
         if (underSqrt >= 0) {
-            double x1 = ring.getCenter().getX() + sqrt(underSqrt);
-            double x2 = ring.getCenter().getX() - sqrt(underSqrt);
-            list.add(new Vertex(x1, y));
-            list.add(new Vertex(x2, y));
+            double sqrtResult = sqrt(underSqrt);
+            list.add(new Vertex(ring.getCenter().getX() + sqrtResult, y));
+            list.add(new Vertex(ring.getCenter().getX() - sqrtResult, y));
         }
 
         underSqrt = zeroIfNegligible(
                 ring.getLargerRadius() * ring.getLargerRadius() - difY * difY);
         if (underSqrt >= 0) {
-            double x1 = ring.getCenter().getX() + sqrt(underSqrt);
-            double x2 = ring.getCenter().getX() - sqrt(underSqrt);
-            list.add(new Vertex(x1, y));
-            list.add(new Vertex(x2, y));
+            double sqrtResult = sqrt(underSqrt);
+            list.add(new Vertex(ring.getCenter().getX() + sqrtResult, y));
+            list.add(new Vertex(ring.getCenter().getX() - sqrtResult, y));
         }
 
         return list;
     }
 
-    public ArrayList<Vertex> Intersect(Band band, Ring ring) {
+    public ArrayList<Vertex> Intersect(Ring ring, Band band) {
         // either entirely vertical or entirely horizontal band
         ArrayList<Vertex> list = new ArrayList<>();
         if (Double.isFinite(band.getBandWidth())) {
@@ -247,8 +242,14 @@ public class Area {
         return list;
     }
 
-    public ArrayList<Vertex> Intersect(Ring ring, Band band) {
-        return Intersect(band, ring);
+    private ArrayList<Vertex> IntersectCircle(Vertex starting, double constraintLength, Ring ring) {
+
+        ArrayList<Vertex> list = new ArrayList<>();
+        list.addAll(IntersectRingsSubroutine(starting, ring.getCenter(),
+                constraintLength, ring.getSmallerRadius()));
+        list.addAll(IntersectRingsSubroutine(starting, ring.getCenter(),
+                constraintLength, ring.getLargerRadius()));
+        return list;
     }
 
     public ArrayList<Vertex> Intersect(Ring ring1, Ring ring2) {
@@ -277,13 +278,14 @@ public class Area {
                 + r2 * r2 - r1 * r1;
         double q = c - a * c1.getX();
         double a2plusb2 = a * a + b * b;
-        double bbq = b * c2.getY() - q;
+        double bbq = b * c1.getY() - q;
         double underSqrt = zeroIfNegligible(a2plusb2 * r1 * r1 - bbq * bbq);
         if (underSqrt < 0) {
             return list;
         }
-        double y1 = (b * q + c1.getY() * a * a + a * sqrt(underSqrt)) / a2plusb2;
-        double y2 = (b * q + c1.getY() * a * a - a * sqrt(underSqrt)) / a2plusb2;
+        double sqrtResult = sqrt(underSqrt);
+        double y1 = (b * q + c1.getY() * a * a + a * sqrtResult) / a2plusb2;
+        double y2 = (b * q + c1.getY() * a * a - a * sqrtResult) / a2plusb2;
         double x1 = (c - b * y1) / a;
         double x2 = (c - b * y2) / a;
         list.add(new Vertex(x1, y1));
@@ -294,12 +296,11 @@ public class Area {
     public Vertex getClosestPoint(Vertex starting, Vertex target, Segment segment) {
         //choose closest intersection to target
         ArrayList<Vertex> possibilities = new ArrayList<>();
-        possibilities.add(target);
+//        possibilities.add(target);
 
-        // check if valid!
         if (promotedToBand) {
             possibilities.addAll(filterValidVertices(
-                    Project(target, band), starting, segment));
+                    Projection(target, band), starting, segment));
 
             switch (segment.getConstraint()) {
                 case horizontal:
@@ -322,7 +323,7 @@ public class Area {
             }
         } else {
             possibilities.addAll(filterValidVertices(
-                    Project(target, ring), starting, segment));
+                    Projection(target, ring), starting, segment));
 
             switch (segment.getConstraint()) {
                 case horizontal:
@@ -331,25 +332,24 @@ public class Area {
                     break;
                 case vertical:
                     possibilities.addAll(
-                            IntersectVertical(starting.getY(), ring));
+                            IntersectVertical(starting.getX(), ring));
                     break;
 
                 case fixedLength:
-                    possibilities.addAll(Intersect(
-                            new Ring(starting, segment.getConstraintLength()), ring));
+                    possibilities.addAll(IntersectCircle(
+                            starting, segment.getConstraintLength(), ring));
                     break;
             }
         }
-        possibilities = filterValidVertices(possibilities, starting, segment);
-        Vertex current, best = null;
-        double bestDistance = Double.POSITIVE_INFINITY;
+
+        Vertex best = null;
+        double smallestSquareDistance = Double.POSITIVE_INFINITY;
         for (int i = 0, max = possibilities.size(); i < max; i++) {
             // check if vertex is valid!!
-            current = possibilities.get(i);
-            double currentDistance = Euclidean2dGeometry.getSquareDistance(
-                    current, target);
-            if (currentDistance < bestDistance) {
-                bestDistance = currentDistance;
+            double currentSquareDistance = Euclidean2dGeometry.getSquareDistance(
+                    possibilities.get(i), target);
+            if (currentSquareDistance < smallestSquareDistance) {
+                smallestSquareDistance = currentSquareDistance;
                 best = possibilities.get(i);
             }
         }
@@ -408,4 +408,5 @@ public class Area {
 //        // implement later...
 //        return null;
 //    }
+
 }

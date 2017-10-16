@@ -1,5 +1,5 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
+ * To change this license header, choose License Headers in Projection Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -115,7 +115,6 @@ public class Polygon implements Drawable {
                             movePolygon(mouseEvent));
                     reaction.setDesiredCursor(Cursor.CLOSED_HAND);
                     break;
-                default:
             }
         } else {
             // check if at least the cursor is above the polygon
@@ -175,7 +174,7 @@ public class Polygon implements Drawable {
     }
 
     private boolean isInsidePolygon(Vertex position) {
-        // source: https://stackoverflow.com/questions/217578/how-can-i-determine-whether-a-2d-point-is-within-a-polygon/2922778#2922778
+        // source: stackoverflow.com/questions/217578/how-can-i-determine-whether-a-2d-point-is-within-a-polygon/2922778#2922778
         boolean isInside = false;
         int i, j, max = segments.size();
         for (i = 0, j = max - 1; i < max; j = i++) {
@@ -380,6 +379,7 @@ public class Polygon implements Drawable {
         // use the fact of stiffness? really?
         Area point = new Area(targetVertex);
 
+        // try to unify iterations once
         ArrayList<Area> cAreas = new ArrayList<>();
         Segment cSegmentIterator = vertex.getBeginningOfSegment();
         Area cLatestArea = point.generalize(cSegmentIterator);
@@ -390,7 +390,7 @@ public class Polygon implements Drawable {
             cBestFound = 1;
         } else if (cNext.isFixed()) {
             // cannot find exactly a fixed vertex!
-            System.out.println("Impossible!");
+            System.out.println("Reached a non-reachable stiff vertex. End.");
             return false;
         } else {
             int max = vertices.size();
@@ -404,7 +404,7 @@ public class Polygon implements Drawable {
                     break;
                 } else if (cNext.isFixed()) {
                     // cannot find exactly a fixed vertex!
-                    System.out.println("Impossible!");
+                    System.out.println("Reached a non-reachable stiff vertex. End.");
                     return false;
                 }
             }
@@ -420,7 +420,7 @@ public class Polygon implements Drawable {
             ccBestFound = 1;
         } else if (ccNext.isFixed()) {
             // cannot find exactly a fixed vertex!
-            System.out.println("Should try closest possibility here!");
+            System.out.println("Reached a non-reachable stiff vertex. End.");
             return false;
         } else {
             int max = vertices.size();
@@ -434,14 +434,14 @@ public class Polygon implements Drawable {
                     break;
                 } else if (ccNext.isFixed()) {
                     // cannot find exactly a fixed vertex!
-                    System.out.println("Should try closest possibility here!");
+                    System.out.println("Reached a non-reachable stiff vertex. End.");
                     return false;
                 }
             }
         }
 
         if (cBestFound + ccBestFound > vertices.size()) {
-            System.out.println("Should try closest possibility here!");
+            System.out.println("Movement vertex count is too large. End.");
             return false;
         }
 
@@ -457,10 +457,27 @@ public class Polygon implements Drawable {
             cNewVertex = cAreas.get(i).getClosestPoint(
                     cNewVertex, cTmpPrevious, cBackSegment);
             if (cNewVertex == null) {
-                System.out.println("This is sooooo wrong!");
+                System.out.println("Possible return way yet no vertex found. End.");
                 return false;
             }
             cNewVerticesReversed.add(cNewVertex);
+        }
+
+        ArrayList<Vertex> ccNewVerticesReversed = new ArrayList<>();
+        Segment ccBackSegment;
+        Vertex ccBackVertex = ccNext;
+        Vertex ccNewVertex = ccNext, ccTmpPrevious;
+
+        for (int i = ccAreas.size() - 2; i >= 0; i--) {
+            ccBackSegment = ccBackVertex.getBeginningOfSegment();
+            ccTmpPrevious = ccBackSegment.getEnd();
+            ccNewVertex = ccAreas.get(i).getClosestPoint(
+                    ccNewVertex, ccTmpPrevious, ccBackSegment);
+            if (ccNewVertex == null) {
+                System.out.println("Possible return way yet no vertex found. End.");
+                return false;
+            }
+            ccNewVerticesReversed.add(ccNewVertex);
         }
 
         cBackVertex = cNext;
@@ -472,27 +489,10 @@ public class Polygon implements Drawable {
             cTmpPrevious.setY(cNewVertex.getY());
         }
 
-        ArrayList<Vertex> ccNewVerticesReversed = new ArrayList<>();
-        Segment ccBackSegment;
-        Vertex ccBackVertex = ccNext;
-        Vertex ccNewVertex = ccNext, ccTmpPrevious;
-
-        for (int i = ccAreas.size() - 2; i >= 0; i--) {
-            ccBackSegment = ccBackVertex.getEndOfSegment();
-            ccTmpPrevious = ccBackSegment.getBeginning();
-            ccNewVertex = ccAreas.get(i).getClosestPoint(
-                    ccNewVertex, ccTmpPrevious, ccBackSegment);
-            if (ccNewVertex == null) {
-                System.out.println("This is sooooo wrong!");
-                return false;
-            }
-            ccNewVerticesReversed.add(ccNewVertex);
-        }
-
         ccBackVertex = ccNext;
         for (int i = 0; i < ccAreas.size() - 2; i++) {
-            ccBackSegment = ccBackVertex.getEndOfSegment();
-            ccTmpPrevious = ccBackSegment.getBeginning();
+            ccBackSegment = ccBackVertex.getBeginningOfSegment();
+            ccTmpPrevious = ccBackSegment.getEnd();
             ccNewVertex = ccNewVerticesReversed.get(i);
             ccTmpPrevious.setX(ccNewVertex.getX());
             ccTmpPrevious.setY(ccNewVertex.getY());
@@ -506,8 +506,6 @@ public class Polygon implements Drawable {
         //
         // OTHERWISE
         // try to solve for nearest point and repeat the procedure with new target
-//        vertex.setX(targetVertex.getX());
-//        vertex.setY(targetVertex.getY());
         return true;
     }
 
