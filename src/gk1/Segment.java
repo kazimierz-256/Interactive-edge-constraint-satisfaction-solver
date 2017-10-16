@@ -36,19 +36,19 @@ public class Segment {
         return constraint;
     }
 
-    public void makeFree() {
+    public void restrictFree() {
         constraint = segmentConstraint.free;
     }
 
-    public void makeHorizontal() {
+    public void restrictHorizontal() {
         constraint = segmentConstraint.horizontal;
     }
 
-    public void makeVertical() {
+    public void restrictVertical() {
         constraint = segmentConstraint.vertical;
     }
 
-    public void makeFixedLength(double length) {
+    public void restrictFixedLength(double length) {
         constraint = segmentConstraint.fixedLength;
         constraintLength = length;
     }
@@ -71,5 +71,17 @@ public class Segment {
 
     public double getConstraintLength() {
         return constraintLength;
+    }
+
+    public double getCenterX() {
+        return getBeginning().getX() + (getEnd().getX() - getBeginning().getX()) / 2;
+    }
+
+    public double getCenterY() {
+        return getBeginning().getY() + (getEnd().getY() - getBeginning().getY()) / 2;
+    }
+
+    public Vertex getCenter() {
+        return new Vertex(getCenterX(), getCenterY());
     }
 }

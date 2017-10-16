@@ -48,7 +48,7 @@ public class FXMLDocumentController implements Initializable {
         contextMenu.hide();
         if (MouseButton.SECONDARY == mouseEvent.getButton()) {
             // display the contextmenu!
-            ArrayList<MenuItem> menuItems = GK1.model.buildMenu(mouseEvent);
+            ArrayList<MenuItem> menuItems = GK1.model.buildContextMenu(mouseEvent);
             if (menuItems.isEmpty()) {
                 return;
             }

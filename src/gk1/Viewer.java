@@ -32,6 +32,28 @@ public class Viewer {
                 segment.getBeginning().getY(),
                 segment.getEnd().getX(),
                 segment.getEnd().getY());
+        double x, y;
+        switch (segment.getConstraint()) {
+            case vertical:
+                x = segment.getCenterX();
+                y = segment.getCenterY();
+                graphicsContext.strokeRect(x, y, 10, 10);
+                graphicsContext.strokeText("v", x, y);
+                break;
+            case horizontal:
+                x = segment.getCenterX();
+                y = segment.getCenterY();
+                graphicsContext.strokeRect(x, y, 10, 10);
+                graphicsContext.strokeText("h", x, y);
+                break;
+            case fixedLength:
+                x = segment.getCenterX();
+                y = segment.getCenterY();
+                graphicsContext.strokeRect(x, y, 10, 10);
+                graphicsContext.strokeText(
+                        String.format("%2.1f", segment.getConstraintLength()), x, y);
+                break;
+        }
         // do skopiowania algorytm Bresenhama
     }
 

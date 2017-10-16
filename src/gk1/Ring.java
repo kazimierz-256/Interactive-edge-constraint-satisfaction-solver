@@ -21,6 +21,10 @@ public class Ring {
         this.largerRadius = largerRadius;
     }
 
+    public Ring(Vertex vertex, double radius) {
+        this(vertex, radius, radius);
+    }
+
     public Vertex getCenter() {
         return center;
     }

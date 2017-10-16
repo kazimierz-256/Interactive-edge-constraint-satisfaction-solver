@@ -26,6 +26,6 @@ public interface Drawable {
     Reaction mouseReleased(MouseEvent mouseEvent);
 
 //    Reaction reactKey(UserAction.ActionType action, KeyEvent event);
-    ArrayList<MenuItem> buildMenu(MouseEvent event);
+    ArrayList<MenuItem> buildContextMenu(MouseEvent event);
 
 }

@@ -46,13 +46,13 @@ public class Model implements Drawable {
     }
 
     @Override
-    public ArrayList<MenuItem> buildMenu(MouseEvent event) {
+    public ArrayList<MenuItem> buildContextMenu(MouseEvent event) {
         // gather all MenuItems from all objects in an organized manner
 
         ArrayList<MenuItem> mainMenuItems = new ArrayList<>();
 
         drawables.forEach((drawable) -> {
-            ArrayList<MenuItem> subMenuItems = drawable.buildMenu(event);
+            ArrayList<MenuItem> subMenuItems = drawable.buildContextMenu(event);
             if (subMenuItems.size() > 0) {
                 Menu subMenu = new Menu(drawable.toString());
                 subMenu.getItems().addAll(subMenuItems);

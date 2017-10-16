@@ -107,7 +107,7 @@ public class Polygon implements Drawable {
             switch (moveEntity) {
                 case movingVertex:
                     reaction.mergeShouldRender(
-                            tryMoveVertex(moveVertex, position));
+                            tryMoveVertexExactly(moveVertex, position));
                     reaction.setDesiredCursor(Cursor.MOVE);
                     break;
                 case movingPolygon:
@@ -215,19 +215,10 @@ public class Polygon implements Drawable {
 
     @Override
 
-    public ArrayList<MenuItem> buildMenu(MouseEvent event) {
+    public ArrayList<MenuItem> buildContextMenu(MouseEvent event) {
         ArrayList<MenuItem> menuItems = new ArrayList<>();
 
         Vertex position = new Vertex(event.getX(), event.getY());
-
-        if (isInsidePolygon(position)) {
-            MenuItem menuItem = new MenuItem("Delete polygon");
-            menuItem.setOnAction((ActionEvent e) -> {
-                GK1.model.unregisterDrawable(this);
-                GK1.model.draw(GK1.viewer);
-            });
-            menuItems.add(menuItem);
-        }
 
         // add segments contextmenu
         getNearbySegments(position).forEach((segment) -> {
@@ -241,29 +232,41 @@ public class Polygon implements Drawable {
             });
             menu.getItems().add(menuItem);
 
-            // horizontal segment
-            menuItem = new MenuItem("Make horizontal");
-            menuItem.setOnAction((ActionEvent e) -> {
-                tryHorizontal(segment);
-                GK1.model.draw(GK1.viewer);
-            });
-            menu.getItems().add(menuItem);
+            if (segment.getConstraint() == Segment.segmentConstraint.free) {
+                // horizontal segment
+                menuItem = new MenuItem("Make horizontal");
+                menuItem.setOnAction((ActionEvent e) -> {
+                    tryHorizontal(segment);
+                    GK1.model.draw(GK1.viewer);
+                });
+                menu.getItems().add(menuItem);
 
-            // vertical segment
-            menuItem = new MenuItem("Make vertical");
-            menuItem.setOnAction((ActionEvent e) -> {
-                tryVertical(segment);
-                GK1.model.draw(GK1.viewer);
-            });
-            menu.getItems().add(menuItem);
+                // vertical segment
+                menuItem = new MenuItem("Make vertical");
+                menuItem.setOnAction((ActionEvent e) -> {
+                    tryVertical(segment);
+                    GK1.model.draw(GK1.viewer);
+                });
+                menu.getItems().add(menuItem);
 
-            // fixed length segment
-            menuItem = new MenuItem("Fix length");
-            menuItem.setOnAction((ActionEvent e) -> {
-                tryFixedLength(segment);
-                GK1.model.draw(GK1.viewer);
-            });
-            menu.getItems().add(menuItem);
+                // fixed length segment
+                menuItem = new MenuItem("Fix length");
+                menuItem.setOnAction((ActionEvent e) -> {
+                    tryFixedLength(segment);
+                    GK1.model.draw(GK1.viewer);
+                });
+                menu.getItems().add(menuItem);
+            } else {
+
+                // free the segment
+                menuItem = new MenuItem("Free");
+                menuItem.setOnAction((ActionEvent e) -> {
+                    segment.restrictFree();
+                    GK1.model.draw(GK1.viewer);
+                });
+                menu.getItems().add(menuItem);
+
+            }
 
             menuItems.add(menu);
         });
@@ -295,6 +298,15 @@ public class Polygon implements Drawable {
             menuItems.add(menu);
         });
 
+        if (!menuItems.isEmpty() || isInsidePolygon(position)) {
+            MenuItem menuItem = new MenuItem("Delete polygon");
+            menuItem.setOnAction((ActionEvent e) -> {
+                GK1.model.unregisterDrawable(this);
+                GK1.model.draw(GK1.viewer);
+            });
+            menuItems.add(menuItem);
+        }
+
         return menuItems;
     }
 
@@ -310,22 +322,19 @@ public class Polygon implements Drawable {
         beginningSegment.setEnd(endSegment.getEnd());
         vertices.remove(vertex);
         segments.remove(endSegment);
+        beginningSegment.restrictFree();
     }
 
     public void addVertexInbetween(Segment segment) {
         int segmentIndex = segments.indexOf(segment);
         int vertexIndex = vertices.indexOf(segment.getBeginning());
-        double newX = segment.getBeginning().getX()
-                + (segment.getEnd().getX() - segment.getBeginning().getX()) / 2;
-        double newY = segment.getBeginning().getY()
-                + (segment.getEnd().getY() - segment.getBeginning().getY()) / 2;
-        Vertex newVertex = new Vertex(newX, newY);
+        Vertex newVertex = segment.getCenter();
         Segment newSegment = new Segment(newVertex, segment.getEnd());
         newVertex.setBeginningOfSegment(newSegment);
         newVertex.setEndOfSegment(segment);
         segment.getEnd().setEndOfSegment(newSegment);
         segment.setEnd(newVertex);
-        segment.makeFree();
+        segment.restrictFree();
         vertices.add(vertexIndex + 1, newVertex);
         segments.add(segmentIndex + 1, newSegment);
     }
@@ -340,58 +349,62 @@ public class Polygon implements Drawable {
         // undone
     }
 
-    public void tryFixedLength(Segment segment) {
-
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setHeaderText(String.format(
-                "Please enter the desired length of %s.\nCurrent length is about %2.1f",
-                segment.toString(), sqrt(Euclidean2dGeometry.getSquareLength(segment))));
-        dialog.setTitle("Fixing segment length");
-        dialog.showAndWait();
-        try {
-            double result = Double.parseDouble(dialog.getResult());
-            segment.makeFixedLength(result);
-        } catch (NullPointerException e) {
-
-        } catch (NumberFormatException e) {
-
-        }
+    public void tryFixedLength(Segment segment, double targetLength) {
 
         // implement approaching from both sides and choosing the best combination
         // remember to set fixedLength inside the segment!
         // undone
     }
 
+    public void tryFixedLength(Segment segment) {
+
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setHeaderText(String.format(
+                "Please enter the desired length of %s.\nCurrent length is about %2.1f\nLeave blank to restrict to current length",
+                segment.toString(), sqrt(Euclidean2dGeometry.getSquareLength(segment))));
+        dialog.setTitle("Fixing segment length");
+        dialog.showAndWait();
+        double result;
+        try {
+            result = Double.parseDouble(dialog.getResult());
+            tryFixedLength(segment, result);
+        } catch (NullPointerException | NumberFormatException e) {
+            result = sqrt(Euclidean2dGeometry.getSquareLength(segment));
+        }
+        segment.restrictFixedLength(result);
+    }
+
     //returns boolean in case the moving command did not succeed
-    public boolean tryMoveVertex(Vertex vertex, Vertex targetVertex) {
+    public boolean tryMoveVertexExactly(Vertex vertex, Vertex targetVertex) {
         // first, try to solve _exactly_
+        // use the fact of stiffness? really?
         Area point = new Area(targetVertex);
 
         ArrayList<Area> cAreas = new ArrayList<>();
         Segment cSegmentIterator = vertex.getBeginningOfSegment();
         Area cLatestArea = point.generalize(cSegmentIterator);
         cAreas.add(cLatestArea);
-        int cBestFound = -1;
+        int cBestFound;
         Vertex cNext = cSegmentIterator.getEnd();
         if (cLatestArea.isContaining(cNext)) {
             cBestFound = 1;
         } else if (cNext.isFixed()) {
             // cannot find exactly a fixed vertex!
-            System.out.println("Should try closest possibility here!");
+            System.out.println("Impossible!");
             return false;
         } else {
-            for (int i = 2, max = vertices.size(); i < max; i++) {
+            int max = vertices.size();
+            for (cBestFound = 2; cBestFound < max; cBestFound++) {
 
                 cSegmentIterator = cNext.getBeginningOfSegment();
                 cLatestArea = cLatestArea.generalize(cSegmentIterator);
                 cAreas.add(cLatestArea);
                 cNext = cSegmentIterator.getEnd();
                 if (cLatestArea.isContaining(cNext)) {
-                    cBestFound = i;
                     break;
                 } else if (cNext.isFixed()) {
                     // cannot find exactly a fixed vertex!
-                    System.out.println("Should try closest possibility here!");
+                    System.out.println("Impossible!");
                     return false;
                 }
             }
@@ -401,7 +414,7 @@ public class Polygon implements Drawable {
         Segment ccSegmentIterator = vertex.getEndOfSegment();
         Area ccLatestArea = point.generalize(ccSegmentIterator);
         ccAreas.add(ccLatestArea);
-        int ccBestFound = -1;
+        int ccBestFound;
         Vertex ccNext = ccSegmentIterator.getBeginning();
         if (ccLatestArea.isContaining(ccNext)) {
             ccBestFound = 1;
@@ -410,14 +423,14 @@ public class Polygon implements Drawable {
             System.out.println("Should try closest possibility here!");
             return false;
         } else {
-            for (int i = 2, max = vertices.size(); i < max; i++) {
+            int max = vertices.size();
+            for (ccBestFound = 2; ccBestFound < max; ccBestFound++) {
 
                 ccSegmentIterator = ccNext.getEndOfSegment();
                 ccLatestArea = ccLatestArea.generalize(ccSegmentIterator);
                 ccAreas.add(ccLatestArea);
                 ccNext = ccSegmentIterator.getBeginning();
                 if (ccLatestArea.isContaining(ccNext)) {
-                    ccBestFound = i;
                     break;
                 } else if (ccNext.isFixed()) {
                     // cannot find exactly a fixed vertex!
@@ -427,12 +440,66 @@ public class Polygon implements Drawable {
             }
         }
 
-        if (cBestFound < 0 || ccBestFound < 0
-                || (cBestFound + ccBestFound > vertices.size())) {
+        if (cBestFound + ccBestFound > vertices.size()) {
             System.out.println("Should try closest possibility here!");
             return false;
         }
 
+        // PUSH BACK
+        ArrayList<Vertex> cNewVerticesReversed = new ArrayList<>();
+        Segment cBackSegment;
+        Vertex cBackVertex = cNext;
+        Vertex cNewVertex = cNext, cTmpPrevious;
+
+        for (int i = cAreas.size() - 2; i >= 0; i--) {
+            cBackSegment = cBackVertex.getEndOfSegment();
+            cTmpPrevious = cBackSegment.getBeginning();
+            cNewVertex = cAreas.get(i).getClosestPoint(
+                    cNewVertex, cTmpPrevious, cBackSegment);
+            if (cNewVertex == null) {
+                System.out.println("This is sooooo wrong!");
+                return false;
+            }
+            cNewVerticesReversed.add(cNewVertex);
+        }
+
+        cBackVertex = cNext;
+        for (int i = 0; i < cAreas.size() - 2; i++) {
+            cBackSegment = cBackVertex.getEndOfSegment();
+            cTmpPrevious = cBackSegment.getBeginning();
+            cNewVertex = cNewVerticesReversed.get(i);
+            cTmpPrevious.setX(cNewVertex.getX());
+            cTmpPrevious.setY(cNewVertex.getY());
+        }
+
+        ArrayList<Vertex> ccNewVerticesReversed = new ArrayList<>();
+        Segment ccBackSegment;
+        Vertex ccBackVertex = ccNext;
+        Vertex ccNewVertex = ccNext, ccTmpPrevious;
+
+        for (int i = ccAreas.size() - 2; i >= 0; i--) {
+            ccBackSegment = ccBackVertex.getEndOfSegment();
+            ccTmpPrevious = ccBackSegment.getBeginning();
+            ccNewVertex = ccAreas.get(i).getClosestPoint(
+                    ccNewVertex, ccTmpPrevious, ccBackSegment);
+            if (ccNewVertex == null) {
+                System.out.println("This is sooooo wrong!");
+                return false;
+            }
+            ccNewVerticesReversed.add(ccNewVertex);
+        }
+
+        ccBackVertex = ccNext;
+        for (int i = 0; i < ccAreas.size() - 2; i++) {
+            ccBackSegment = ccBackVertex.getEndOfSegment();
+            ccTmpPrevious = ccBackSegment.getBeginning();
+            ccNewVertex = ccNewVerticesReversed.get(i);
+            ccTmpPrevious.setX(ccNewVertex.getX());
+            ccTmpPrevious.setY(ccNewVertex.getY());
+        }
+
+        vertex.setX(targetVertex.getX());
+        vertex.setY(targetVertex.getY());
         // work my way back the chain...
         //look for exact matches and correct vertices up the way twards the target!
         //how cool is that?
