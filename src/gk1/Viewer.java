@@ -49,9 +49,9 @@ public class Viewer {
             case fixedLength:
                 x = segment.getCenterX();
                 y = segment.getCenterY();
-                graphicsContext.strokeRect(x, y, 10, 10);
+//                graphicsContext.strokeRect(x, y, 10, 10);
                 graphicsContext.strokeText(
-                        String.format("%2.1f", segment.getConstraintLength()), x, y);
+                        String.format("[%2.1f]", segment.getConstraintLength()), x, y);
                 break;
         }
         // do skopiowania algorytm Bresenhama

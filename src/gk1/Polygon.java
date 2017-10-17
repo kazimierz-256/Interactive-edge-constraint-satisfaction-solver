@@ -341,6 +341,8 @@ public class Polygon implements Drawable {
     private void tryHorizontal(Segment segment) {
         // implement approaching from both sides and choosing the best combination
         // undone
+        // i suspect the situation is symmetrical
+        // therefore freeze one of the vertices & try to complete the cycle with the other one
     }
 
     private void tryVertical(Segment segment) {
@@ -442,6 +444,7 @@ public class Polygon implements Drawable {
         }
 
         // PUSH BACK
+        // something is inherently wrong here
         ArrayList<Vertex> cNewVerticesReversed = new ArrayList<>();
         Segment cBackSegment;
         Vertex cBackVertex = cNext;
@@ -452,11 +455,15 @@ public class Polygon implements Drawable {
             cTmpPrevious = cBackSegment.getBeginning();
             cNewVertex = cAreas.get(i).getClosestPoint(
                     cNewVertex, cTmpPrevious, cBackSegment);
+
             if (cNewVertex == null) {
+                // try doing everything again? but this time using the maximum
+                // precision principle instead of minimum distance principle!
                 System.out.println("Possible return way yet no vertex found. End.");
                 return false;
             }
             cNewVerticesReversed.add(cNewVertex);
+            cBackVertex = cTmpPrevious;
         }
 
         ArrayList<Vertex> ccNewVerticesReversed = new ArrayList<>();
@@ -474,6 +481,7 @@ public class Polygon implements Drawable {
                 return false;
             }
             ccNewVerticesReversed.add(ccNewVertex);
+            ccBackVertex = ccTmpPrevious;
         }
 
         cBackVertex = cNext;
@@ -482,6 +490,7 @@ public class Polygon implements Drawable {
             cTmpPrevious = cBackSegment.getBeginning();
             cTmpPrevious.setX(cNewVerticesReversed.get(i).getX());
             cTmpPrevious.setY(cNewVerticesReversed.get(i).getY());
+            cBackVertex = cTmpPrevious;
         }
 
         ccBackVertex = ccNext;
@@ -490,6 +499,7 @@ public class Polygon implements Drawable {
             ccTmpPrevious = ccBackSegment.getEnd();
             ccTmpPrevious.setX(ccNewVerticesReversed.get(i).getX());
             ccTmpPrevious.setY(ccNewVerticesReversed.get(i).getY());
+            ccBackVertex = ccTmpPrevious;
         }
 
         vertex.setX(targetVertex.getX());
