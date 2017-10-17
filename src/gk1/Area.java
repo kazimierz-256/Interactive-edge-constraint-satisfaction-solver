@@ -16,7 +16,8 @@ import java.util.ArrayList;
  */
 public class Area {
 
-    final double eps = pow(2, -48);
+    // eps co najmniej 2^-30
+    private final double eps = pow(2, -10);
     private boolean promotedToBand = false;
     private Ring ring;
     private Band band;
@@ -93,31 +94,44 @@ public class Area {
         return null;
     }
 
+    public double containingError(Vertex vertex) {
+        double totalError = 0;
+        if (promotedToBand) {
+            double offsetX = abs(band.getCenter().getX() - vertex.getX());
+            totalError += offsetX > band.getBandWidth()
+                    ? offsetX - band.getBandWidth() : 0;
+            double offsetY = abs(band.getCenter().getY() - vertex.getY());
+            totalError += offsetY > band.getBandHeight()
+                    ? offsetY - band.getBandHeight() : 0;
+        } else {
+            double distance = Euclidean2dGeometry.getSquareDistance(
+                    ring.getCenter(), vertex);
+            double smallRSquared = ring.getSmallerRadius() * ring.getSmallerRadius();
+            double largeRSquared = ring.getLargerRadius() * ring.getLargerRadius();
+            totalError += distance < smallRSquared ? smallRSquared - distance : 0;
+            totalError += distance > largeRSquared ? distance - largeRSquared : 0;
+        }
+        return totalError;
+    }
+
     public boolean isContaining(Vertex vertex) {
-        if (promotedToBand) {
-            boolean withinX = abs(band.getCenter().getX() - vertex.getX()) <= band.getBandWidth();
-            boolean withinY = abs(band.getCenter().getY() - vertex.getY()) <= band.getBandHeight();
-            return withinX && withinY;
-        } else {
-            boolean outsideInnerShell = Euclidean2dGeometry.getSquareDistance(ring.getCenter(), vertex) >= ring.getSmallerRadius() * ring.getSmallerRadius();
-            boolean insideOuterShell = Euclidean2dGeometry.getSquareDistance(ring.getCenter(), vertex) <= ring.getLargerRadius() * ring.getLargerRadius();
-            return outsideInnerShell && insideOuterShell;
-        }
+        return containingError(vertex) < eps;
+//        if (promotedToBand) {
+//            boolean withinX = abs(band.getCenter().getX() - vertex.getX()) - eps <= band.getBandWidth();
+//            boolean withinY = abs(band.getCenter().getY() - vertex.getY()) - eps <= band.getBandHeight();
+//            return withinX && withinY;
+//        } else {
+//            double distance = Euclidean2dGeometry.getSquareDistance(
+//                    ring.getCenter(), vertex);
+//            boolean outsideInnerShell = distance + eps
+//                    >= ring.getSmallerRadius() * ring.getSmallerRadius();
+//            boolean insideOuterShell = distance - eps
+//                    <= ring.getLargerRadius() * ring.getLargerRadius();
+//            return outsideInnerShell && insideOuterShell;
+//        }
     }
 
-    public boolean isContaining(Vertex vertex, double eps) {
-        if (promotedToBand) {
-            boolean withinX = abs(band.getCenter().getX() - vertex.getX()) - eps <= band.getBandWidth();
-            boolean withinY = abs(band.getCenter().getY() - vertex.getY()) - eps <= band.getBandHeight();
-            return withinX && withinY;
-        } else {
-            boolean outsideInnerShell = Euclidean2dGeometry.getSquareDistance(ring.getCenter(), vertex) + eps >= ring.getSmallerRadius() * ring.getSmallerRadius();
-            boolean insideOuterShell = Euclidean2dGeometry.getSquareDistance(ring.getCenter(), vertex) - eps <= ring.getLargerRadius() * ring.getLargerRadius();
-            return outsideInnerShell && insideOuterShell;
-        }
-    }
-
-    public ArrayList<Vertex> Projection(Vertex vertex, Band band) {
+    private ArrayList<Vertex> Projection(Vertex vertex, Band band) {
 
         ArrayList<Vertex> list = new ArrayList<>();
         if (Double.isFinite(band.getBandWidth())) {
@@ -139,7 +153,7 @@ public class Area {
         return list;
     }
 
-    public ArrayList<Vertex> Projection(Vertex vertex, Ring ring) {
+    private ArrayList<Vertex> Projection(Vertex vertex, Ring ring) {
         ArrayList<Vertex> list = new ArrayList<>();
         // danger if vertex is close to ring's center!
         double quotient = sqrt(Euclidean2dGeometry.getSquareDistance(vertex, ring.getCenter()));
@@ -159,7 +173,7 @@ public class Area {
         return list;
     }
 
-    public ArrayList<Vertex> IntersectVertical(double x, Band band) {
+    private ArrayList<Vertex> IntersectVertical(double x, Band band) {
         // horizontal finite-height band
         ArrayList<Vertex> list = new ArrayList<>();
         list.add(new Vertex(x, band.getCenter().getY() + band.getBandHeight()));
@@ -167,7 +181,7 @@ public class Area {
         return list;
     }
 
-    public ArrayList<Vertex> IntersectHorizontal(double y, Band band) {
+    private ArrayList<Vertex> IntersectHorizontal(double y, Band band) {
         // vertical finite-width band
         ArrayList<Vertex> list = new ArrayList<>();
         list.add(new Vertex(band.getCenter().getX() + band.getBandWidth(), y));
@@ -175,7 +189,7 @@ public class Area {
         return list;
     }
 
-    public ArrayList<Vertex> IntersectVertical(double x, Ring ring) {
+    private ArrayList<Vertex> IntersectVertical(double x, Ring ring) {
 
         ArrayList<Vertex> list = new ArrayList<>();
         double difX = x - ring.getCenter().getX();
@@ -199,7 +213,7 @@ public class Area {
         return list;
     }
 
-    public ArrayList<Vertex> IntersectHorizontal(double y, Ring ring) {
+    private ArrayList<Vertex> IntersectHorizontal(double y, Ring ring) {
 
         ArrayList<Vertex> list = new ArrayList<>();
         double difY = y - ring.getCenter().getY();
@@ -223,7 +237,7 @@ public class Area {
         return list;
     }
 
-    public ArrayList<Vertex> Intersect(Ring ring, Band band) {
+    private ArrayList<Vertex> Intersect(Ring ring, Band band) {
         // either entirely vertical or entirely horizontal band
         ArrayList<Vertex> list = new ArrayList<>();
         if (Double.isFinite(band.getBandWidth())) {
@@ -252,7 +266,7 @@ public class Area {
         return list;
     }
 
-    public ArrayList<Vertex> Intersect(Ring ring1, Ring ring2) {
+    private ArrayList<Vertex> Intersect(Ring ring1, Ring ring2) {
 
         ArrayList<Vertex> list = new ArrayList<>();
         Vertex c1 = ring1.getCenter();
@@ -296,11 +310,11 @@ public class Area {
     public Vertex getClosestPoint(Vertex starting, Vertex target, Segment segment) {
         //choose closest intersection to target
         ArrayList<Vertex> possibilities = new ArrayList<>();
-//        possibilities.add(target);
+        possibilities.add(target);
 
         if (promotedToBand) {
-            possibilities.addAll(filterValidVertices(
-                    Projection(target, band), starting, segment));
+            possibilities.addAll(Projection(target, band));
+            possibilities = filterValidVertices(possibilities, starting, segment);
 
             switch (segment.getConstraint()) {
                 case horizontal:
@@ -322,8 +336,8 @@ public class Area {
                     break;
             }
         } else {
-            possibilities.addAll(filterValidVertices(
-                    Projection(target, ring), starting, segment));
+            possibilities.addAll(Projection(target, ring));
+            possibilities = filterValidVertices(possibilities, starting, segment);
 
             switch (segment.getConstraint()) {
                 case horizontal:
@@ -342,6 +356,7 @@ public class Area {
             }
         }
 
+        possibilities = filterValidVertices(possibilities, starting, segment);
         Vertex best = null;
         double smallestSquareDistance = Double.POSITIVE_INFINITY;
         for (int i = 0, max = possibilities.size(); i < max; i++) {
@@ -353,50 +368,79 @@ public class Area {
                 best = possibilities.get(i);
             }
         }
+
+        // choose the most accurate one!!!
+//        double smallestError = Double.POSITIVE_INFINITY;
+//        for (int i = 0, max = possibilities.size(); i < max; i++) {
+//            // check if vertex is valid!!
+//            double currentError = filterTotalError(
+//                    possibilities.get(i), starting, segment);
+//            if (currentError < smallestError) {
+//                smallestError = currentError;
+//                best = possibilities.get(i);
+//            }
+//        }
         return best;
+    }
+
+    private double filterTotalError(Vertex vertex, Vertex starting, Segment segment) {
+        double totalError = containingError(vertex);
+        switch (segment.getConstraint()) {
+            case horizontal:
+                totalError += abs(starting.getY() - vertex.getY());
+                break;
+            case vertical:
+                totalError += abs(starting.getX() - vertex.getX());
+                break;
+            case fixedLength:
+
+                totalError += abs(Euclidean2dGeometry.getSquareDistance(vertex, starting)
+                        - segment.getConstraintLength()
+                        * segment.getConstraintLength());
+                break;
+        }
+        return totalError;
     }
 
     private ArrayList<Vertex> filterValidVertices(ArrayList<Vertex> list, Vertex starting, Segment segment) {
         ArrayList<Vertex> filteredList = new ArrayList<>();
         for (int i = 0, max = list.size(); i < max; i++) {
-            Vertex current = list.get(i);
-            if (!isContaining(current, eps)) {
-                // too restrictive...
-                continue;
-            } else {
-                boolean doContinue = false;
-                switch (segment.getConstraint()) {
-                    case horizontal:
-                        // be more flexible...
-                        if (abs(starting.getY() - current.getY()) > eps) {
-                            doContinue = true;
-                        }
-                        break;
-                    case vertical:
-                        if (abs(starting.getX() - current.getX()) > eps) {
-                            doContinue = true;
-                        }
-                        break;
-                    case fixedLength:
-
-                        if (abs(Euclidean2dGeometry.getSquareDistance(current, starting)
-                                - segment.getConstraintLength()
-                                * segment.getConstraintLength()) > eps) {
-                            doContinue = true;
-                        }
-                        break;
-                }
-                if (doContinue) {
-                    continue;
-
-                }
+            if (filterTotalError(list.get(i), starting, segment) < eps) {
+                filteredList.add(list.get(i));
             }
-            filteredList.add(current);
+//            if (!isContaining(current)) {
+//                continue;
+//            } else {
+//                boolean doContinue = false;
+//                switch (segment.getConstraint()) {
+//                    case horizontal:
+//                        if (abs(starting.getY() - current.getY()) > eps) {
+//                            doContinue = true;
+//                        }
+//                        break;
+//                    case vertical:
+//                        if (abs(starting.getX() - current.getX()) > eps) {
+//                            doContinue = true;
+//                        }
+//                        break;
+//                    case fixedLength:
+//
+//                        if (abs(Euclidean2dGeometry.getSquareDistance(current, starting)
+//                                - segment.getConstraintLength()
+//                                * segment.getConstraintLength()) > eps) {
+//                            doContinue = true;
+//                        }
+//                        break;
+//                }
+//                if (doContinue) {
+//                    continue;
+//                }
+//            }
         }
         return filteredList;
     }
 
-    public double zeroIfNegligible(double number) {
+    private double zeroIfNegligible(double number) {
         if (abs(number) < eps) {
             return 0;
         } else {

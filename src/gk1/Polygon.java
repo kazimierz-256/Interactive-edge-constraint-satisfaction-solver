@@ -46,7 +46,7 @@ public class Polygon implements Drawable {
     private ActionState state = ActionState.idle;
     private MouseEvent rememberedMouseClick;
 
-    private double clickThreshold = 200;
+    private double clickThreshold = 300;
     private ArrayList<Vertex> vertices;
     private ArrayList<Segment> segments;
     private String name;
@@ -338,26 +338,27 @@ public class Polygon implements Drawable {
         segments.add(segmentIndex + 1, newSegment);
     }
 
-    public void tryHorizontal(Segment segment) {
+    private void tryHorizontal(Segment segment) {
         // implement approaching from both sides and choosing the best combination
         // undone
     }
 
-    public void tryVertical(Segment segment) {
+    private void tryVertical(Segment segment) {
         // implement approaching from both sides and choosing the best combination
         // undone
     }
 
-    public void tryFixedLength(Segment segment, double targetLength) {
+    private void tryFixedLength(Segment segment, double targetLength) {
 
         // implement approaching from both sides and choosing the best combination
         // remember to set fixedLength inside the segment!
         // undone
     }
 
-    public void tryFixedLength(Segment segment) {
+    private void tryFixedLength(Segment segment) {
 
         TextInputDialog dialog = new TextInputDialog();
+        // should try .initOwner(primaryStage)
         dialog.setHeaderText(String.format(
                 "Please enter the desired length of %s.\nCurrent length is about %2.1f\nLeave blank to restrict to current length",
                 segment.toString(), sqrt(Euclidean2dGeometry.getSquareLength(segment))));
@@ -374,11 +375,12 @@ public class Polygon implements Drawable {
     }
 
     //returns boolean in case the moving command did not succeed
-    public boolean tryMoveVertexExactly(Vertex vertex, Vertex targetVertex) {
+    private boolean tryMoveVertexExactly(Vertex vertex, Vertex targetVertex) {
         // first, try to solve _exactly_
         // use the fact of stiffness? really?
         Area point = new Area(targetVertex);
 
+        // I suspect the bug lies somewhere inside this algorithm
         // try to unify iterations once
         ArrayList<Area> cAreas = new ArrayList<>();
         Segment cSegmentIterator = vertex.getBeginningOfSegment();
@@ -389,13 +391,11 @@ public class Polygon implements Drawable {
         if (cLatestArea.isContaining(cNext)) {
             cBestFound = 1;
         } else if (cNext.isFixed()) {
-            // cannot find exactly a fixed vertex!
             System.out.println("Reached a non-reachable stiff vertex. End.");
             return false;
         } else {
             int max = vertices.size();
             for (cBestFound = 2; cBestFound < max; cBestFound++) {
-
                 cSegmentIterator = cNext.getBeginningOfSegment();
                 cLatestArea = cLatestArea.generalize(cSegmentIterator);
                 cAreas.add(cLatestArea);
@@ -403,7 +403,6 @@ public class Polygon implements Drawable {
                 if (cLatestArea.isContaining(cNext)) {
                     break;
                 } else if (cNext.isFixed()) {
-                    // cannot find exactly a fixed vertex!
                     System.out.println("Reached a non-reachable stiff vertex. End.");
                     return false;
                 }
@@ -419,13 +418,11 @@ public class Polygon implements Drawable {
         if (ccLatestArea.isContaining(ccNext)) {
             ccBestFound = 1;
         } else if (ccNext.isFixed()) {
-            // cannot find exactly a fixed vertex!
             System.out.println("Reached a non-reachable stiff vertex. End.");
             return false;
         } else {
             int max = vertices.size();
             for (ccBestFound = 2; ccBestFound < max; ccBestFound++) {
-
                 ccSegmentIterator = ccNext.getEndOfSegment();
                 ccLatestArea = ccLatestArea.generalize(ccSegmentIterator);
                 ccAreas.add(ccLatestArea);
@@ -433,7 +430,6 @@ public class Polygon implements Drawable {
                 if (ccLatestArea.isContaining(ccNext)) {
                     break;
                 } else if (ccNext.isFixed()) {
-                    // cannot find exactly a fixed vertex!
                     System.out.println("Reached a non-reachable stiff vertex. End.");
                     return false;
                 }
@@ -481,31 +477,23 @@ public class Polygon implements Drawable {
         }
 
         cBackVertex = cNext;
-        for (int i = 0; i < cAreas.size() - 2; i++) {
+        for (int i = 0; i < cAreas.size() - 1; i++) {
             cBackSegment = cBackVertex.getEndOfSegment();
             cTmpPrevious = cBackSegment.getBeginning();
-            cNewVertex = cNewVerticesReversed.get(i);
-            cTmpPrevious.setX(cNewVertex.getX());
-            cTmpPrevious.setY(cNewVertex.getY());
+            cTmpPrevious.setX(cNewVerticesReversed.get(i).getX());
+            cTmpPrevious.setY(cNewVerticesReversed.get(i).getY());
         }
 
         ccBackVertex = ccNext;
-        for (int i = 0; i < ccAreas.size() - 2; i++) {
+        for (int i = 0; i < ccAreas.size() - 1; i++) {
             ccBackSegment = ccBackVertex.getBeginningOfSegment();
             ccTmpPrevious = ccBackSegment.getEnd();
-            ccNewVertex = ccNewVerticesReversed.get(i);
-            ccTmpPrevious.setX(ccNewVertex.getX());
-            ccTmpPrevious.setY(ccNewVertex.getY());
+            ccTmpPrevious.setX(ccNewVerticesReversed.get(i).getX());
+            ccTmpPrevious.setY(ccNewVerticesReversed.get(i).getY());
         }
 
         vertex.setX(targetVertex.getX());
         vertex.setY(targetVertex.getY());
-        // work my way back the chain...
-        //look for exact matches and correct vertices up the way twards the target!
-        //how cool is that?
-        //
-        // OTHERWISE
-        // try to solve for nearest point and repeat the procedure with new target
         return true;
     }
 
