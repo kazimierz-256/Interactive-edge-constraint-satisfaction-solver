@@ -237,54 +237,76 @@ public class Area {
         return list;
     }
 
+    public Vertex mostAccurateFixedLength(Vertex starting, Vertex end, double radius) {
+        ArrayList<Vertex> possibilities = new ArrayList<>();
+
+        if (promotedToBand) {
+            possibilities.addAll(Projection(starting, band));
+            possibilities.addAll(Intersect(new Ring(starting, radius), band));
+        } else {
+            possibilities.addAll(Projection(starting, ring));
+            possibilities.addAll(Intersect(new Ring(starting, radius), ring));
+        }
+        //filter
+
+        Segment constraintSegment = new Segment(starting,
+                new Vertex(starting.getX(), starting.getY() + radius));
+        constraintSegment.restrictFixedLength(radius);
+        possibilities = filterValidVertices(possibilities, starting, constraintSegment);
+
+        return getMostAccuratePossibility(possibilities, starting, constraintSegment);
+    }
+
     private ArrayList<Vertex> Intersect(Ring ring, Band band) {
         // either entirely vertical or entirely horizontal band
-        ArrayList<Vertex> list = new ArrayList<>();
+        ArrayList<Vertex> possibilities = new ArrayList<>();
         if (Double.isFinite(band.getBandWidth())) {
             //vertical band
-            list.addAll(IntersectVertical(
+            possibilities.addAll(IntersectVertical(
                     band.getCenter().getX() + band.getBandWidth(), ring));
-            list.addAll(IntersectVertical(
+            possibilities.addAll(IntersectVertical(
                     band.getCenter().getX() - band.getBandWidth(), ring));
         } else {
             // horizontal band
-            list.addAll(IntersectHorizontal(
+            possibilities.addAll(IntersectHorizontal(
                     band.getCenter().getY() + band.getBandHeight(), ring));
-            list.addAll(IntersectHorizontal(
+            possibilities.addAll(IntersectHorizontal(
                     band.getCenter().getY() - band.getBandHeight(), ring));
         }
-        return list;
+        return possibilities;
     }
 
-    private ArrayList<Vertex> IntersectCircle(Vertex starting, double constraintLength, Ring ring) {
+    private ArrayList<Vertex> IntersectCircle(
+            Vertex starting, double constraintLength, Ring ring) {
 
-        ArrayList<Vertex> list = new ArrayList<>();
-        list.addAll(IntersectRingsSubroutine(starting, ring.getCenter(),
+        ArrayList<Vertex> possibilities = new ArrayList<>();
+        possibilities.addAll(IntersectRingsSubroutine(starting, ring.getCenter(),
                 constraintLength, ring.getSmallerRadius()));
-        list.addAll(IntersectRingsSubroutine(starting, ring.getCenter(),
+        possibilities.addAll(IntersectRingsSubroutine(starting, ring.getCenter(),
                 constraintLength, ring.getLargerRadius()));
-        return list;
+        return possibilities;
     }
 
     private ArrayList<Vertex> Intersect(Ring ring1, Ring ring2) {
 
-        ArrayList<Vertex> list = new ArrayList<>();
+        ArrayList<Vertex> possibilities = new ArrayList<>();
         Vertex c1 = ring1.getCenter();
         Vertex c2 = ring2.getCenter();
-        list.addAll(IntersectRingsSubroutine(c1, c2,
+        possibilities.addAll(IntersectRingsSubroutine(c1, c2,
                 ring1.getSmallerRadius(), ring2.getSmallerRadius()));
-        list.addAll(IntersectRingsSubroutine(c1, c2,
+        possibilities.addAll(IntersectRingsSubroutine(c1, c2,
                 ring1.getSmallerRadius(), ring2.getLargerRadius()));
-        list.addAll(IntersectRingsSubroutine(c1, c2,
+        possibilities.addAll(IntersectRingsSubroutine(c1, c2,
                 ring1.getLargerRadius(), ring2.getSmallerRadius()));
-        list.addAll(IntersectRingsSubroutine(c1, c2,
+        possibilities.addAll(IntersectRingsSubroutine(c1, c2,
                 ring1.getLargerRadius(), ring2.getLargerRadius()));
-        return list;
+        return possibilities;
     }
 
-    private ArrayList<Vertex> IntersectRingsSubroutine(Vertex c1, Vertex c2, double r1, double r2) {
+    private ArrayList<Vertex> IntersectRingsSubroutine(
+            Vertex c1, Vertex c2, double r1, double r2) {
 
-        ArrayList<Vertex> list = new ArrayList<>();
+        ArrayList<Vertex> possibilities = new ArrayList<>();
         double a = 2 * (c1.getX() - c2.getX());
         double b = 2 * (c1.getY() - c2.getY());
         double c = c1.getX() * c1.getX() - c2.getX() * c2.getX()
@@ -295,26 +317,26 @@ public class Area {
         double bbq = b * c1.getY() - q;
         double underSqrt = zeroIfNegligible(a2plusb2 * r1 * r1 - bbq * bbq);
         if (underSqrt < 0) {
-            return list;
+            return possibilities;
         }
         double sqrtResult = sqrt(underSqrt);
         double y1 = (b * q + c1.getY() * a * a + a * sqrtResult) / a2plusb2;
         double y2 = (b * q + c1.getY() * a * a - a * sqrtResult) / a2plusb2;
         double x1 = (c - b * y1) / a;
         double x2 = (c - b * y2) / a;
-        list.add(new Vertex(x1, y1));
-        list.add(new Vertex(x2, y2));
-        return list;
+        possibilities.add(new Vertex(x1, y1));
+        possibilities.add(new Vertex(x2, y2));
+        return possibilities;
     }
 
-    public Vertex getClosestPoint(Vertex starting, Vertex target, Segment segment) {
+    public Vertex getClosestPoint(
+            Vertex starting, Vertex target, Segment segment, boolean preferCloser) {
         //choose closest intersection to target
         ArrayList<Vertex> possibilities = new ArrayList<>();
         possibilities.add(target);
 
         if (promotedToBand) {
             possibilities.addAll(Projection(target, band));
-            possibilities = filterValidVertices(possibilities, starting, segment);
 
             switch (segment.getConstraint()) {
                 case horizontal:
@@ -337,7 +359,6 @@ public class Area {
             }
         } else {
             possibilities.addAll(Projection(target, ring));
-            possibilities = filterValidVertices(possibilities, starting, segment);
 
             switch (segment.getConstraint()) {
                 case horizontal:
@@ -357,6 +378,17 @@ public class Area {
         }
 
         possibilities = filterValidVertices(possibilities, starting, segment);
+        if (preferCloser) {
+        } else {
+            // choose the most accurate one
+            // may become void if the closer ones are computed exactly
+
+        }
+        return preferCloser ? getClosestPossibility(possibilities, target)
+                : getMostAccuratePossibility(possibilities, starting, segment);
+    }
+
+    private Vertex getClosestPossibility(ArrayList<Vertex> possibilities, Vertex target) {
         Vertex best = null;
         double smallestSquareDistance = Double.POSITIVE_INFINITY;
         for (int i = 0, max = possibilities.size(); i < max; i++) {
@@ -368,22 +400,27 @@ public class Area {
                 best = possibilities.get(i);
             }
         }
-
-        // choose the most accurate one!!!
-//        double smallestError = Double.POSITIVE_INFINITY;
-//        for (int i = 0, max = possibilities.size(); i < max; i++) {
-//            // check if vertex is valid!!
-//            double currentError = filterTotalError(
-//                    possibilities.get(i), starting, segment);
-//            if (currentError < smallestError) {
-//                smallestError = currentError;
-//                best = possibilities.get(i);
-//            }
-//        }
         return best;
     }
 
-    private double filterTotalError(Vertex vertex, Vertex starting, Segment segment) {
+    private Vertex getMostAccuratePossibility(
+            ArrayList<Vertex> possibilities, Vertex starting, Segment segment) {
+        Vertex best = null;
+        double smallestError = Double.POSITIVE_INFINITY;
+        for (int i = 0, max = possibilities.size(); i < max; i++) {
+            // check if vertex is valid!!
+            double currentError = satisfabilityTotalError(
+                    possibilities.get(i), starting, segment);
+            if (currentError < smallestError) {
+                smallestError = currentError;
+                best = possibilities.get(i);
+            }
+        }
+        return best;
+    }
+
+    private double satisfabilityTotalError(
+            Vertex vertex, Vertex starting, Segment segment) {
         double totalError = containingError(vertex);
         switch (segment.getConstraint()) {
             case horizontal:
@@ -402,40 +439,13 @@ public class Area {
         return totalError;
     }
 
-    private ArrayList<Vertex> filterValidVertices(ArrayList<Vertex> list, Vertex starting, Segment segment) {
+    private ArrayList<Vertex> filterValidVertices(
+            ArrayList<Vertex> list, Vertex starting, Segment segment) {
         ArrayList<Vertex> filteredList = new ArrayList<>();
         for (int i = 0, max = list.size(); i < max; i++) {
-            if (filterTotalError(list.get(i), starting, segment) < eps) {
+            if (satisfabilityTotalError(list.get(i), starting, segment) < eps) {
                 filteredList.add(list.get(i));
             }
-//            if (!isContaining(current)) {
-//                continue;
-//            } else {
-//                boolean doContinue = false;
-//                switch (segment.getConstraint()) {
-//                    case horizontal:
-//                        if (abs(starting.getY() - current.getY()) > eps) {
-//                            doContinue = true;
-//                        }
-//                        break;
-//                    case vertical:
-//                        if (abs(starting.getX() - current.getX()) > eps) {
-//                            doContinue = true;
-//                        }
-//                        break;
-//                    case fixedLength:
-//
-//                        if (abs(Euclidean2dGeometry.getSquareDistance(current, starting)
-//                                - segment.getConstraintLength()
-//                                * segment.getConstraintLength()) > eps) {
-//                            doContinue = true;
-//                        }
-//                        break;
-//                }
-//                if (doContinue) {
-//                    continue;
-//                }
-//            }
         }
         return filteredList;
     }
