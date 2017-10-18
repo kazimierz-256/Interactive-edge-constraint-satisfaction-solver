@@ -94,7 +94,7 @@ public class Viewer {
     }
 
     private void BresenhamDown(Vertex left, Vertex right) {
-        Color color = Color.RED;
+        Color color = Color.BLACK;
 
         int x1 = (int) left.getX();
         int x2 = (int) right.getX();
@@ -126,7 +126,7 @@ public class Viewer {
     }
 
     private void BresenhamSteepDown(Vertex left, Vertex right) {
-        Color color = Color.CORAL;
+        Color color = Color.BLACK;
 
         int x1 = (int) left.getX();
         int x2 = (int) right.getX();
@@ -158,7 +158,7 @@ public class Viewer {
     }
 
     private void BresenhamUp(Vertex left, Vertex right) {
-        Color color = Color.CRIMSON;
+        Color color = Color.BLACK;
 
         int x1 = (int) left.getX();
         int x2 = (int) right.getX();
@@ -190,7 +190,7 @@ public class Viewer {
     }
 
     private void BresenhamSteepUp(Vertex left, Vertex right) {
-        Color color = Color.SADDLEBROWN;
+        Color color = Color.BLACK;
 
         int x1 = (int) left.getX();
         int x2 = (int) right.getX();
