@@ -90,7 +90,6 @@ public class Viewer {
                         String.format("[%2.1f]", segment.getConstraintLength()), x, y);
                 break;
         }
-        // do skopiowania algorytm Bresenhama
     }
 
     private void BresenhamDown(Vertex left, Vertex right) {
