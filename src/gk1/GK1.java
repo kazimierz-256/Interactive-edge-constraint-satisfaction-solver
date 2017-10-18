@@ -25,9 +25,18 @@ public class GK1 extends Application {
     public void start(Stage primaryStage) throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource("FXMLDocument.fxml"));
         Scene scene = new Scene(root, 600, 600);
+        primaryStage.widthProperty().addListener((obs, oldVal, newVal) -> {
+            viewer.setWidth((double) newVal);
+            model.draw(viewer);
+        });
+
+        primaryStage.heightProperty().addListener((obs, oldVal, newVal) -> {
+            viewer.setHeight((double) newVal);
+            model.draw(viewer);
+        });
         primaryStage.setTitle("nanoCAD");
         primaryStage.setScene(scene);
-        primaryStage.setResizable(false);
+//        primaryStage.setResizable(false);
         primaryStage.show();
     }
 

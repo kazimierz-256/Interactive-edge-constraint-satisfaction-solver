@@ -78,8 +78,9 @@ public class FXMLDocumentController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+
         GK1.model = new Model();
-        GK1.viewer = new Viewer(drawing.getGraphicsContext2D(), 600, 600);
+        GK1.viewer = new Viewer(drawing, 600, 600);
         GK1.model.draw(GK1.viewer);
     }
 }

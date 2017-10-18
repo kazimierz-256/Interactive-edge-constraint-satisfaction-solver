@@ -235,24 +235,27 @@ public class Polygon implements Drawable {
                 // horizontal segment
                 menuItem = new MenuItem("Make horizontal");
                 menuItem.setOnAction((ActionEvent e) -> {
-                    tryHorizontal(segment);
-                    GK1.model.draw(GK1.viewer);
+                    if (tryHorizontal(segment)) {
+                        GK1.model.draw(GK1.viewer);
+                    }
                 });
                 menu.getItems().add(menuItem);
 
                 // vertical segment
                 menuItem = new MenuItem("Make vertical");
                 menuItem.setOnAction((ActionEvent e) -> {
-                    tryVertical(segment);
-                    GK1.model.draw(GK1.viewer);
+                    if (tryVertical(segment)) {
+                        GK1.model.draw(GK1.viewer);
+                    }
                 });
                 menu.getItems().add(menuItem);
 
                 // fixed length segment
                 menuItem = new MenuItem("Fix length");
                 menuItem.setOnAction((ActionEvent e) -> {
-                    tryFixedLength(segment);
-                    GK1.model.draw(GK1.viewer);
+                    if (tryFixedLength(segment)) {
+                        GK1.model.draw(GK1.viewer);
+                    }
                 });
                 menu.getItems().add(menuItem);
             } else {
@@ -338,88 +341,58 @@ public class Polygon implements Drawable {
         segments.add(segmentIndex + 1, newSegment);
     }
 
-    private void tryHorizontal(Segment segment) {
-        // implement approaching from both sides and choosing the best combination
-        // undone
-        // i suspect the situation is symmetrical
-        // therefore freeze one of the vertices & try to complete the cycle with the other one
-    }
-
-    private void tryVertical(Segment segment) {
-        // implement approaching from both sides and choosing the best combination
-        // undone
-    }
-
-    private boolean tryFixedLength(Segment segment, double targetLength) {
-        segment.restrictFixedLength(targetLength);
+    private boolean tryHorizontal(Segment segment) {
+        segment.restrictHorizontal();
         boolean result = tryMoveVertexExactly(
-                segment.getBeginning(), segment.getBeginning(), false);
+                segment.getBeginning(), segment.getBeginning(), true);
+        if (result) {
+            return true;
+        }
+        result = tryMoveVertexExactly(
+                segment.getEnd(), segment.getEnd(), true);
         if (result) {
             return true;
         } else {
             segment.restrictFree();
             return false;
         }
-        // implement approaching from both sides and choosing the best combination
-        // remember to set fixedLength inside the segment!
-        // undone
-        //fix the beginning
-//        // buildup area towards the flexible vertex
-//        ArrayList<Area> cAreas = new ArrayList<>();
-//        Vertex cNext = segment.getEnd();
-//        Segment cSegmentIterator;
-//        Area cLatestArea = new Area(segment.getEnd());
-//        int cBestFound = 1;
-//        for (int max = vertices.size() - 1; cBestFound < max; cBestFound++) {
-//            cSegmentIterator = cNext.getBeginningOfSegment();
-//            cLatestArea = cLatestArea.generalize(cSegmentIterator);
-//            cAreas.add(cLatestArea);
-//            cNext = cSegmentIterator.getEnd();
-//            if (cNext.isFixed()) {
-//                System.out.println("Reached a stiff vertex.");
-//                return false;
-//            }
-//        }
-//
-//        //check if vertical line is possible to achieve
-//        Vertex bestIntersection = cLatestArea.mostAccurateFixedLength(
-//                segment.getBeginning(), segment.getEnd(), targetLength);
-//        if (bestIntersection == null) {
-//            return false;
-//        }
-//        // solve myself in reverse order
-//        cNext = segment.getBeginning();
-//        ArrayList<Vertex> cNewVerticesReversed = new ArrayList<>();
-//        Segment cBackSegment;
-//        Vertex cBackVertex = cNext;
-//        Vertex cNewVertex = cNext, cTmpPrevious;
-//
-//        for (int i = cAreas.size() - 2; i >= 0; i--) {
-//            cBackSegment = cBackVertex.getEndOfSegment();
-//            cTmpPrevious = cBackSegment.getBeginning();
-//            cNewVertex = cAreas.get(i).getClosestPoint(
-//                    cNewVertex, cTmpPrevious, cBackSegment, false);
-//
-//            if (cNewVertex == null) {
-//                System.out.println("Numerical errors blew up");
-//                return false;
-//            }
-//            cNewVerticesReversed.add(cNewVertex);
-//            cBackVertex = cTmpPrevious;
-//        }
-//
-//        cBackVertex = cNext;
-//        for (int i = 0, max = cAreas.size() - 1; i < max; i++) {
-//            cBackSegment = cBackVertex.getEndOfSegment();
-//            cTmpPrevious = cBackSegment.getBeginning();
-//            cTmpPrevious.setX(cNewVerticesReversed.get(i).getX());
-//            cTmpPrevious.setY(cNewVerticesReversed.get(i).getY());
-//            cBackVertex = cTmpPrevious;
-//        }
-//        return true;
     }
 
-    private void tryFixedLength(Segment segment) {
+    private boolean tryVertical(Segment segment) {
+        segment.restrictVertical();
+        boolean result = tryMoveVertexExactly(
+                segment.getBeginning(), segment.getBeginning(), true);
+        if (result) {
+            return true;
+        }
+        result = tryMoveVertexExactly(
+                segment.getEnd(), segment.getEnd(), true);
+        if (result) {
+            return true;
+        } else {
+            segment.restrictFree();
+            return false;
+        }
+    }
+
+    private boolean tryFixedLength(Segment segment, double targetLength) {
+        segment.restrictFixedLength(targetLength);
+        boolean result = tryMoveVertexExactly(
+                segment.getBeginning(), segment.getBeginning(), true);
+        if (result) {
+            return true;
+        }
+        result = tryMoveVertexExactly(
+                segment.getEnd(), segment.getEnd(), true);
+        if (result) {
+            return true;
+        } else {
+            segment.restrictFree();
+            return false;
+        }
+    }
+
+    private boolean tryFixedLength(Segment segment) {
 
         TextInputDialog dialog = new TextInputDialog();
         // should try .initOwner(primaryStage)
@@ -431,11 +404,17 @@ public class Polygon implements Drawable {
         double result;
         try {
             result = Double.parseDouble(dialog.getResult());
-            tryFixedLength(segment, result);
+            if (tryFixedLength(segment, result)) {
+                segment.restrictFixedLength(result);
+                return true;
+            } else {
+                return false;
+            }
         } catch (NullPointerException | NumberFormatException e) {
             result = sqrt(Euclidean2dGeometry.getSquareLength(segment));
+            segment.restrictFixedLength(result);
+            return true;
         }
-        segment.restrictFixedLength(result);
     }
 
     //returns boolean in case the moving command did not succeed
@@ -545,5 +524,84 @@ public class Polygon implements Drawable {
 
         return true;
     }
+//
+//    private boolean tryMoveVertexApproximately(Vertex vertex, Vertex targetVertex, boolean preferCloser) {
+//        // I do not know why this method doesn't want to work
+//        // it is not crucial for the program to work
+////        // at least try the exact method
+////        if (tryMoveVertexExactly(vertex, targetVertex, preferCloser)) {
+////            return true;
+////        }
+////        // look for a vertex that is furthest away from the 'vertex'
+////        Vertex furthest = vertex;
+////        double furthestDistance = 0;
+////        for (int i = 0, max = vertices.size(); i < max; i++) {
+////            double currentDistance = Euclidean2dGeometry.getSquareDistance(
+////                    vertices.get(i), vertex);
+////            if (currentDistance > furthestDistance) {
+////                furthestDistance = currentDistance;
+////                furthest = vertices.get(i);
+////            }
+////        }
+////        // 'fix' that vertex, build up areas until 'vertex' is found
+////
+////        //find containing areas
+////        ArrayList<Area> cAreas = new ArrayList<>();
+////        Vertex cNext = furthest;
+////        Segment cSegmentIterator;
+////        Area cLatestArea = new Area(furthest);
+////        int cBestFound = 1;
+////        for (int max = vertices.size(); cBestFound < max; cBestFound++) {
+////            cSegmentIterator = cNext.getBeginningOfSegment();
+////            cLatestArea = cLatestArea.generalize(cSegmentIterator);
+////            cAreas.add(cLatestArea);
+////            cNext = cSegmentIterator.getEnd();
+////            if (cNext == vertex) {
+////                break;
+////            } else if (cNext.isFixed()) {
+////                cLatestArea = new Area(cNext);
+////            }
+////        }
+////
+////        ArrayList<Area> ccAreas = new ArrayList<>();
+////        Vertex ccNext = furthest;
+////        Segment ccSegmentIterator;
+////        Area ccLatestArea = new Area(furthest);
+////        int ccBestFound = 1;
+////        for (int max = vertices.size(); ccBestFound < max; ccBestFound++) {
+////            ccSegmentIterator = ccNext.getEndOfSegment();
+////            ccLatestArea = ccLatestArea.generalize(ccSegmentIterator);
+////            ccAreas.add(ccLatestArea);
+////            ccNext = ccSegmentIterator.getBeginning();
+////            if (ccNext == vertex) {
+////                break;
+////            } else if (ccNext.isFixed()) {
+////                ccLatestArea = new Area(ccNext);
+////            }
+////        }
+////        // find the closest intersection to targetVertex
+////
+////        ArrayList<Vertex> possibilities = new ArrayList<>();
+////
+////        if (ccLatestArea.isContaining(targetVertex) && ccLatestArea.isContaining(targetVertex)) {
+////            possibilities.add(targetVertex);
+////        }
+////
+////        possibilities.addAll(ccLatestArea.thatContains(
+////                cLatestArea.Projection(vertex)));
+////
+////        possibilities.addAll(cLatestArea.thatContains(
+////                ccLatestArea.Projection(vertex)));
+////
+////        possibilities.addAll(cLatestArea.Intersect(ccLatestArea));
+////        //        possibilities.addAll(cLatestArea.(ccLatestArea));
+////        Vertex bestApproximation
+////                = Area.getClosestPossibility(possibilities, targetVertex);
+////        if (bestApproximation == null) {
+////            return false;
+////        }
+////        // launch exact movement for the approximation
+////        return tryMoveVertexExactly(vertex, bestApproximation, preferCloser);
+//    }
 
 }

@@ -17,8 +17,8 @@ import java.util.ArrayList;
 public class Area {
 
     // eps co najmniej 2^-30
-    private final double eps = pow(2, -10);
-    private boolean promotedToBand = false;
+    private static final double eps = pow(2, -10);
+    private boolean isPromotedToBand = false;
     private Ring ring;
     private Band band;
 
@@ -31,12 +31,12 @@ public class Area {
     }
 
     public Area(Band band) {
-        promotedToBand = true;
+        isPromotedToBand = true;
         this.band = band;
     }
 
     public Area generalize(Segment segment) {
-        if (promotedToBand) {
+        if (isPromotedToBand) {
             switch (segment.getConstraint()) {
                 case free:
                     return new Area(new Band(new Vertex(0, 0),
@@ -96,7 +96,7 @@ public class Area {
 
     public double containingError(Vertex vertex) {
         double totalError = 0;
-        if (promotedToBand) {
+        if (isPromotedToBand) {
             double offsetX = abs(band.getCenter().getX() - vertex.getX());
             totalError += offsetX > band.getBandWidth()
                     ? offsetX - band.getBandWidth() : 0;
@@ -116,22 +116,17 @@ public class Area {
 
     public boolean isContaining(Vertex vertex) {
         return containingError(vertex) < eps;
-//        if (promotedToBand) {
-//            boolean withinX = abs(band.getCenter().getX() - vertex.getX()) - eps <= band.getBandWidth();
-//            boolean withinY = abs(band.getCenter().getY() - vertex.getY()) - eps <= band.getBandHeight();
-//            return withinX && withinY;
-//        } else {
-//            double distance = Euclidean2dGeometry.getSquareDistance(
-//                    ring.getCenter(), vertex);
-//            boolean outsideInnerShell = distance + eps
-//                    >= ring.getSmallerRadius() * ring.getSmallerRadius();
-//            boolean insideOuterShell = distance - eps
-//                    <= ring.getLargerRadius() * ring.getLargerRadius();
-//            return outsideInnerShell && insideOuterShell;
-//        }
     }
 
-    private ArrayList<Vertex> Projection(Vertex vertex, Band band) {
+    public ArrayList<Vertex> Projection(Vertex vertex) {
+        if (isPromotedToBand) {
+            return Projection(vertex, band);
+        } else {
+            return Projection(vertex, ring);
+        }
+    }
+
+    private static ArrayList<Vertex> Projection(Vertex vertex, Band band) {
 
         ArrayList<Vertex> list = new ArrayList<>();
         if (Double.isFinite(band.getBandWidth())) {
@@ -143,8 +138,8 @@ public class Area {
         } else if (Double.isFinite(band.getBandHeight())) {
             // horizontal
             double y = vertex.getX() > band.getCenter().getX()
-                    ? band.getCenter().getX() + band.getBandWidth()
-                    : band.getCenter().getX() - band.getBandWidth();
+                    ? band.getCenter().getY() + band.getBandHeight()
+                    : band.getCenter().getY() - band.getBandHeight();
             list.add(new Vertex(vertex.getX(), y));
         } else {
             // all R
@@ -153,7 +148,7 @@ public class Area {
         return list;
     }
 
-    private ArrayList<Vertex> Projection(Vertex vertex, Ring ring) {
+    private static ArrayList<Vertex> Projection(Vertex vertex, Ring ring) {
         ArrayList<Vertex> list = new ArrayList<>();
         // danger if vertex is close to ring's center!
         double quotient = sqrt(Euclidean2dGeometry.getSquareDistance(vertex, ring.getCenter()));
@@ -173,7 +168,7 @@ public class Area {
         return list;
     }
 
-    private ArrayList<Vertex> IntersectVertical(double x, Band band) {
+    private static ArrayList<Vertex> IntersectVertical(double x, Band band) {
         // horizontal finite-height band
         ArrayList<Vertex> list = new ArrayList<>();
         list.add(new Vertex(x, band.getCenter().getY() + band.getBandHeight()));
@@ -181,7 +176,7 @@ public class Area {
         return list;
     }
 
-    private ArrayList<Vertex> IntersectHorizontal(double y, Band band) {
+    private static ArrayList<Vertex> IntersectHorizontal(double y, Band band) {
         // vertical finite-width band
         ArrayList<Vertex> list = new ArrayList<>();
         list.add(new Vertex(band.getCenter().getX() + band.getBandWidth(), y));
@@ -189,7 +184,7 @@ public class Area {
         return list;
     }
 
-    private ArrayList<Vertex> IntersectVertical(double x, Ring ring) {
+    private static ArrayList<Vertex> IntersectVertical(double x, Ring ring) {
 
         ArrayList<Vertex> list = new ArrayList<>();
         double difX = x - ring.getCenter().getX();
@@ -213,7 +208,7 @@ public class Area {
         return list;
     }
 
-    private ArrayList<Vertex> IntersectHorizontal(double y, Ring ring) {
+    private static ArrayList<Vertex> IntersectHorizontal(double y, Ring ring) {
 
         ArrayList<Vertex> list = new ArrayList<>();
         double difY = y - ring.getCenter().getY();
@@ -237,27 +232,7 @@ public class Area {
         return list;
     }
 
-    public Vertex mostAccurateFixedLength(Vertex starting, Vertex end, double radius) {
-        ArrayList<Vertex> possibilities = new ArrayList<>();
-
-        if (promotedToBand) {
-            possibilities.addAll(Projection(starting, band));
-            possibilities.addAll(Intersect(new Ring(starting, radius), band));
-        } else {
-            possibilities.addAll(Projection(starting, ring));
-            possibilities.addAll(Intersect(new Ring(starting, radius), ring));
-        }
-        //filter
-
-        Segment constraintSegment = new Segment(starting,
-                new Vertex(starting.getX(), starting.getY() + radius));
-        constraintSegment.restrictFixedLength(radius);
-        possibilities = filterValidVertices(possibilities, starting, constraintSegment);
-
-        return getMostAccuratePossibility(possibilities, starting, constraintSegment);
-    }
-
-    private ArrayList<Vertex> Intersect(Ring ring, Band band) {
+    private static ArrayList<Vertex> Intersect(Ring ring, Band band) {
         // either entirely vertical or entirely horizontal band
         ArrayList<Vertex> possibilities = new ArrayList<>();
         if (Double.isFinite(band.getBandWidth())) {
@@ -276,7 +251,7 @@ public class Area {
         return possibilities;
     }
 
-    private ArrayList<Vertex> IntersectCircle(
+    private static ArrayList<Vertex> IntersectCircle(
             Vertex starting, double constraintLength, Ring ring) {
 
         ArrayList<Vertex> possibilities = new ArrayList<>();
@@ -287,7 +262,42 @@ public class Area {
         return possibilities;
     }
 
-    private ArrayList<Vertex> Intersect(Ring ring1, Ring ring2) {
+    public ArrayList<Vertex> Intersect(Area area) {
+        ArrayList<Vertex> possibilities = new ArrayList<>();
+        possibilities.addAll(isPromotedToBand
+                ? area.Intersect(band) : area.Intersect(ring));
+        return possibilities;
+    }
+
+    public ArrayList<Vertex> Intersect(Band band) {
+        return isPromotedToBand ? Intersect(this.band, band) : Intersect(ring, band);
+    }
+
+    public ArrayList<Vertex> Intersect(Ring ring) {
+        return isPromotedToBand ? Intersect(ring, band) : Intersect(ring, this.ring);
+    }
+
+    private static ArrayList<Vertex> Intersect(Band band1, Band band2) {
+        ArrayList<Vertex> possibilities = new ArrayList<>();
+
+        if (Double.isFinite(band1.getBandWidth()) && Double.isFinite(band2.getBandHeight())) {
+            //band1 is vertical band2 is horizontal
+            possibilities.addAll(IntersectVertical(
+                    band1.getCenter().getX() + band1.getBandWidth(), band2));
+            possibilities.addAll(IntersectVertical(
+                    band1.getCenter().getX() - band1.getBandWidth(), band2));
+        } else if (Double.isFinite(band1.getBandHeight()) && Double.isFinite(band2.getBandWidth())) {
+            //band1 is horizontal band2 is vertical
+
+            possibilities.addAll(IntersectHorizontal(
+                    band1.getCenter().getY() + band1.getBandHeight(), band2));
+            possibilities.addAll(IntersectHorizontal(
+                    band1.getCenter().getY() - band1.getBandHeight(), band2));
+        }
+        return possibilities;
+    }
+
+    private static ArrayList<Vertex> Intersect(Ring ring1, Ring ring2) {
 
         ArrayList<Vertex> possibilities = new ArrayList<>();
         Vertex c1 = ring1.getCenter();
@@ -303,7 +313,7 @@ public class Area {
         return possibilities;
     }
 
-    private ArrayList<Vertex> IntersectRingsSubroutine(
+    private static ArrayList<Vertex> IntersectRingsSubroutine(
             Vertex c1, Vertex c2, double r1, double r2) {
 
         ArrayList<Vertex> possibilities = new ArrayList<>();
@@ -335,7 +345,7 @@ public class Area {
         ArrayList<Vertex> possibilities = new ArrayList<>();
         possibilities.add(target);
 
-        if (promotedToBand) {
+        if (isPromotedToBand) {
             possibilities.addAll(Projection(target, band));
 
             switch (segment.getConstraint()) {
@@ -356,6 +366,8 @@ public class Area {
                     possibilities.addAll(Intersect(
                             new Ring(starting, segment.getConstraintLength()), band));
                     break;
+                case free:
+                    possibilities.add(target);
             }
         } else {
             possibilities.addAll(Projection(target, ring));
@@ -374,21 +386,17 @@ public class Area {
                     possibilities.addAll(IntersectCircle(
                             starting, segment.getConstraintLength(), ring));
                     break;
+                case free:
+                    possibilities.add(target);
             }
         }
 
         possibilities = filterValidVertices(possibilities, starting, segment);
-        if (preferCloser) {
-        } else {
-            // choose the most accurate one
-            // may become void if the closer ones are computed exactly
-
-        }
         return preferCloser ? getClosestPossibility(possibilities, target)
                 : getMostAccuratePossibility(possibilities, starting, segment);
     }
 
-    private Vertex getClosestPossibility(ArrayList<Vertex> possibilities, Vertex target) {
+    public static Vertex getClosestPossibility(ArrayList<Vertex> possibilities, Vertex target) {
         Vertex best = null;
         double smallestSquareDistance = Double.POSITIVE_INFINITY;
         for (int i = 0, max = possibilities.size(); i < max; i++) {
@@ -450,7 +458,17 @@ public class Area {
         return filteredList;
     }
 
-    private double zeroIfNegligible(double number) {
+    public ArrayList<Vertex> thatContains(ArrayList<Vertex> possibilities) {
+        ArrayList<Vertex> containing = new ArrayList<>();
+        for (int i = 0, max = possibilities.size(); i < max; i++) {
+            if (isContaining(possibilities.get(i))) {
+                containing.add(possibilities.get(i));
+            }
+        }
+        return containing;
+    }
+
+    private static double zeroIfNegligible(double number) {
         if (abs(number) < eps) {
             return 0;
         } else {
