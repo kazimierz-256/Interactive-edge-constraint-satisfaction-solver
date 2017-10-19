@@ -52,11 +52,11 @@
                 margin: 8em 0;
             }
 
-            *[class~="breakAfter"]{
+            *[class~=breakAfter]{
 
                 page-break-after: always;
             }
-            *[class~="breakBefore"]{
+            *[class~=breakBefore]{
 
                 page-break-before:  always;
             }
@@ -95,6 +95,12 @@
             ul, ol{
                 margin-left: 2em;
             }
+            *[class~=footnote]{
+                position: relative;
+                top: -3em;
+                font-size:80%;
+                text-align:center;
+            }
         </style>
     </head>
 
@@ -102,43 +108,60 @@
         <article>
             <header class="breakAfter">
                 <h1>Grafika Komputerowa</h1>
-                <h2>Laboratorium 1</h2>
+                <h2>Laboratorium I</h2>
                 <h3>Kazimierz Wojciechowski</h3>
                 <h4>19.10.2017</h4>
             </header>
             <section>
                 <h1>Klawiszologia</h1>
                 <p>Zdecydowałem się na obsługę wszystkich zdarzeń z poziomu adaptywnego menu kontekstowego.
-                    Grupuje komendy według nazw wielokątów, a następnie według kategorii klikniętego obiektu, czyli wielokąt, wierzchołek lub segment.</p>
+                    Polecenia grupuję według nazw wielokątów. Następnie według kategorii klikniętego obiektu (czyli wielokąt, wierzchołek albo segment).</p>
             </section>
             <h1>Algorytm</h1>
             <section>
                 <h2>Założenia i ograniczenia</h2>
-                <p>Zakładam, że żądane położenie wierzchołka jest możliwe do osiągnięcia.
-                    Oznacza to, że model spełni żądanie wytedy i tylko wtedy, gdy nowe położenie idealnie (co do epsilonu) spełnia żądanie oraz nie nagromadziło się dużo błędów numerycznych podczas rozwiązywania.</p><p>
-                    Z tego względu trudno jest spełnić żądanie dla krawędzi z ograniczeniem w pobliżu usztywnionego wierzchołka.
+                <p>Zakładam, że nowe położenie wierzchołka jest możliwe do osiągnięcia.
+                    Oznacza to, że model spełni żądanie wytedy i tylko wtedy, gdy nowe położenie idealnie (co do epsilonu np. \( 2^{-10} \) ) spełnia żądanie oraz nie nagromadziło się zbyt dużo błędów numerycznych podczas rozwiązywania wstecz.</p>
+                <p>Z tego powodu m.in. trudno jest spełnić żądanie dla krawędzi z ograniczeniem w bezpośrednim sąsiedztwie usztywnionego wierzchołka.
 
                 </p>
                 <h2>Pomysł</h2>
-                <p>Nadając żądanie zmiany położenia wierzchołka alogrytm odpowiednio uogólnia pewne pole powierzchni reprezentujące wszystkie możliwe punkty do osiągnięcia.
-                    Algorytm uogólnia pole zaczynając od pierścienia o zerowych promieniach i o środku identycznym z żądanym punktem.
-                    Następnie algorytm uogólnia pole według reguł:</p>
+                <p>Alogrytm odpowiednio uogólnia pewne pole powierzchni reprezentujące wszystkie możliwe punkty do osiągnięcia.
+                    Pole jest początkowo pierścieniem o zerowych promieniach i o środku pokrywającym się z położeniem nowego żądanego punktu.
+                    Następnie algorytm poglądowo uogólnia pole według reguł:</p>
                 <ol>
                     <li>Pierścień uogólniony o stałą odległość uogólnia się na pierścień</li>
                     <li>Pierścień uogólniony o poziomą/pionową linię uogólnia się na pas</li>
                     <li>Pas uogólniony o stałą odległość uogólnia się na pas</li>
                     <li>Pas uogólniony o poziomą/pionową linię uogólnia się na pas</li>
                 </ol>
-                <p>Następnie przechodząc kolejno po krawędziach ogołniam pola powierzchni  i na bieżąco sprawdzam czy kolejny wierzchołek nie mógłby już zawierać się w dotychczas wyznaczonym polu.</p>
-                <p>Gdybysmy napotkali wierzchołek sztywny nienależący do pola lub gdybyśmy potrzebowali zmienić (w sumie idąc zgodnie z ruchem wsk. z. oraz przeciwnie do ruchu wsk. z.) więcej niż ile wynosi liczność wierzchołków, to istniałyby wierzchołki którym przypisujemy dwa różne położenia (jedno wyznaczone idąc zgodnie wzgl. ruchu wsk. z. a drugie położenie wyznaczyliśmy idą przeciwnie do ruchu wsk. z.). Ale taka sytuacja nie może mieć rozwiązania.</p>
+                <p>Następnie przechodząc kolejno po krawędziach uogólniam pola powierzchni  i na bieżąco sprawdzam czy kolejny wierzchołek nie zawiera się przypadkiem w dotychczas wyznaczonym polu. Algorytm kończy uogólnianie dopóki nie znajdzie zawierającego się wierzchołka.</p>
+                <p>Gdybyśmy napotkali wierzchołek sztywny nienależący do pola lub gdybyśmy potrzebowali zmienić więcej niż ile wynosi liczność wierzchołków, to istniałyby wierzchołki którym przypisujemy dwa różne położenia (jedno wyznaczone idąc zgodnie z ruchem wskazówek zegara, a drugie położenie wyznaczyliśmy idąc przeciwnie do ruchu wskazówek zegara). Takie sytuacje nie mają rozwiązania.</p>
                 <p>Wyznaczywszy pierwsze wierzchołki należące do pól wystarczy nastrajać wierzchołki wracając to wierzchołka głównego. Nastrajamy wybierając nabliższy (prawidowy) rzut lub najbliższe przecięcie wcześniejszego pola wraz z polem generowanym przez odpowiedni segment (czyli okrąg lub linia)</p>
                 <p>W przypadku wieloznaczności możemy wybierać albo punk leżący najbliżej poprzedniego położenia albo np. punk dla którego błąd numeryczny będzie miał najmniejszy moduł (niestety powoduje to niekomfortowy efekt niezdecydowania algorytmu).</p>
                 <p>Teoretycznie taki proces ma oczywiście rozwiązanie, ale kumulujące się błędy numeryczne czasami prowadzą do rozstrajania się pól i nie można już znaleźć rozwiązania.</p>
-                <p>Można by temu zaradzić dokonując kilku iteracji metodą Halley'a podczas wyznaczania przecięć.</p>
-                <p class="breakAfter">Chciałbym wzbogacić lakoniczny opis algorytmu chociażby przykładem jego działania:</p>
-                <img src="./Example.svg" class="extended">
+                <p>Aby wymusić na krawędzi relację pozostania poziomej, pionowej lub o konkretnej długości wystarczy, że wyślę żądanie, aby jeden z wierzchołków pozostał na swoim miejscu. W ten sposób algorytm dostosuje odpowiednio drugi koniec krawędzi w taki sposób, aby pierwszy wierzchołek właśnie pozostał na swoim miejscu.</p>
+                <p>Chciałbym wzbogacić niedoskonały opis algorytmu chociażby przykładem jego działania:</p>
+                <img src="./Example.svg" class="extended breakBefore">
+                <h2 class="breakBefore">Pomysły na dalszą optymalizację</h2>
+                <p>W interpreterze Javy nie zauważyłem szczególnej różnicy gdy w algorytmie Bresenhama użyję instrukcji warunkowych, czy też uniknę instrukcji warunkowych stosując sztuczki w duchu strony internetowej <a href="http://graphics.stanford.edu/~seander/bithacks.html">Stanford Bithacks</a>. Ciekawi mnie czy eliminacja zjawiska <em>branchingu</em> procesora skutkowałaby wrostem czy spadkiem wydajności w przypadku projektu c++.</p>
+                <p>Aby zminimalizować kumulowanie się błędów numerycznych uważam, że można by spróbować zastosować metodę Halley'a (lub wielowymiarową metodę Newtona) za każdym razem podczas wyznaczania przecięcia np. pierścienia z innym pierścieniem. Na przykład:
+                    $$ f_n(x):=(x-a)^2+(y_{n-1}-b)-R^2=0 $$
+                    $$ g_n(y):=(x_{n-1}-a)^2+(y-b)-R^2=0 $$
+                    W ten sposób wyznaczone numerycznie <i>rozwiązanie</i> było by zwyczajnie dobrym punktem początkowym dla metody numerycznej znajdującej prawdziwe rozwiązanie.
+                </p>
             </section>
-        </article>
+            <div class="breakBefore footnote">Tekst matematyczny wygenerowałem przy użyciu biblioteki <a href="https://www.mathjax.org/">MathJax</a>.<br>Czcionkę wykorzystałem z zasobów <a href="https://fonts.google.com">Google Fonts</a></div>
+        </article><script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+            tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            processEscapes: true
+            }
+            });
+        </script>
+        <script type="text/javascript" async
+                src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
     </body>
-
 </html>
