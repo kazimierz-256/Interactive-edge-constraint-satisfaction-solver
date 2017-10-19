@@ -67,11 +67,11 @@ public class Model implements Drawable {
                 double y = event.getY();
 
                 TextInputDialog dialog = new TextInputDialog();
-                dialog.setHeaderText("Name a polygon");
-                dialog.setTitle("Please provide a name for the new polygon");
+                dialog.setHeaderText("Please provide a name for the polygon");
+                dialog.setTitle("Polygon name");
                 dialog.showAndWait();
                 String result = dialog.getResult();
-                if (result == null) {
+                if (result == null || result.isEmpty()) {
                     result = "George";
                 }
                 Polygon newPolygon = new Polygon(result, getNextZ(),
