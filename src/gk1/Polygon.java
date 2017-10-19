@@ -27,11 +27,13 @@ public class Polygon implements Drawable {
     }
 
     public enum ActionState {
+
         moving,
         idle
     }
 
     private enum MoveEntity {
+
         movingVertex,
         movingSegment,
         movingPolygon,
@@ -108,7 +110,7 @@ public class Polygon implements Drawable {
                 case movingVertex:
                     reaction.mergeShouldRender(
                             tryMoveVertexExactly(moveVertex, position, true));
-                    reaction.setDesiredCursor(Cursor.MOVE);
+                    reaction.setDesiredCursor(Cursor.CROSSHAIR);
                     break;
                 case movingPolygon:
                     reaction.mergeShouldRender(
@@ -122,7 +124,7 @@ public class Polygon implements Drawable {
                 reaction.setDesiredCursor(Cursor.OPEN_HAND);
             }
             if (!getNearbyVertices(position).isEmpty()) {
-                reaction.setDesiredCursor(Cursor.MOVE);
+                reaction.setDesiredCursor(Cursor.CROSSHAIR);
             }
             return reaction;
         }
@@ -231,34 +233,33 @@ public class Polygon implements Drawable {
             });
             menu.getItems().add(menuItem);
 
-            if (segment.getConstraint() == Segment.segmentConstraint.free) {
-                // horizontal segment
-                menuItem = new MenuItem("Make horizontal");
-                menuItem.setOnAction((ActionEvent e) -> {
-                    if (tryHorizontal(segment)) {
-                        GK1.model.draw(GK1.viewer);
-                    }
-                });
-                menu.getItems().add(menuItem);
+            // horizontal segment
+            menuItem = new MenuItem("Make horizontal if possible");
+            menuItem.setOnAction((ActionEvent e) -> {
+                if (tryHorizontal(segment)) {
+                    GK1.model.draw(GK1.viewer);
+                }
+            });
+            menu.getItems().add(menuItem);
 
-                // vertical segment
-                menuItem = new MenuItem("Make vertical");
-                menuItem.setOnAction((ActionEvent e) -> {
-                    if (tryVertical(segment)) {
-                        GK1.model.draw(GK1.viewer);
-                    }
-                });
-                menu.getItems().add(menuItem);
+            // vertical segment
+            menuItem = new MenuItem("Make vertical if possible");
+            menuItem.setOnAction((ActionEvent e) -> {
+                if (tryVertical(segment)) {
+                    GK1.model.draw(GK1.viewer);
+                }
+            });
+            menu.getItems().add(menuItem);
 
-                // fixed length segment
-                menuItem = new MenuItem("Fix length");
-                menuItem.setOnAction((ActionEvent e) -> {
-                    if (tryFixedLength(segment)) {
-                        GK1.model.draw(GK1.viewer);
-                    }
-                });
-                menu.getItems().add(menuItem);
-            } else {
+            // fixed length segment
+            menuItem = new MenuItem("Fix length if possible");
+            menuItem.setOnAction((ActionEvent e) -> {
+                if (tryFixedLength(segment)) {
+                    GK1.model.draw(GK1.viewer);
+                }
+            });
+            menu.getItems().add(menuItem);
+            if (segment.getConstraint() != Segment.segmentConstraint.free) {
 
                 // free the segment
                 menuItem = new MenuItem("Free");
@@ -301,7 +302,7 @@ public class Polygon implements Drawable {
         });
 
         if (!menuItems.isEmpty() || isInsidePolygon(position)) {
-            MenuItem menuItem = new MenuItem("Delete polygon");
+            MenuItem menuItem = new MenuItem("Remove polygon");
             menuItem.setOnAction((ActionEvent e) -> {
                 GK1.model.unregisterDrawable(this);
                 GK1.model.draw(GK1.viewer);
@@ -524,84 +525,5 @@ public class Polygon implements Drawable {
 
         return true;
     }
-//
-//    private boolean tryMoveVertexApproximately(Vertex vertex, Vertex targetVertex, boolean preferCloser) {
-//        // I do not know why this method doesn't want to work
-//        // it is not crucial for the program to work
-////        // at least try the exact method
-////        if (tryMoveVertexExactly(vertex, targetVertex, preferCloser)) {
-////            return true;
-////        }
-////        // look for a vertex that is furthest away from the 'vertex'
-////        Vertex furthest = vertex;
-////        double furthestDistance = 0;
-////        for (int i = 0, max = vertices.size(); i < max; i++) {
-////            double currentDistance = Euclidean2dGeometry.getSquareDistance(
-////                    vertices.get(i), vertex);
-////            if (currentDistance > furthestDistance) {
-////                furthestDistance = currentDistance;
-////                furthest = vertices.get(i);
-////            }
-////        }
-////        // 'fix' that vertex, build up areas until 'vertex' is found
-////
-////        //find containing areas
-////        ArrayList<Area> cAreas = new ArrayList<>();
-////        Vertex cNext = furthest;
-////        Segment cSegmentIterator;
-////        Area cLatestArea = new Area(furthest);
-////        int cBestFound = 1;
-////        for (int max = vertices.size(); cBestFound < max; cBestFound++) {
-////            cSegmentIterator = cNext.getBeginningOfSegment();
-////            cLatestArea = cLatestArea.generalize(cSegmentIterator);
-////            cAreas.add(cLatestArea);
-////            cNext = cSegmentIterator.getEnd();
-////            if (cNext == vertex) {
-////                break;
-////            } else if (cNext.isFixed()) {
-////                cLatestArea = new Area(cNext);
-////            }
-////        }
-////
-////        ArrayList<Area> ccAreas = new ArrayList<>();
-////        Vertex ccNext = furthest;
-////        Segment ccSegmentIterator;
-////        Area ccLatestArea = new Area(furthest);
-////        int ccBestFound = 1;
-////        for (int max = vertices.size(); ccBestFound < max; ccBestFound++) {
-////            ccSegmentIterator = ccNext.getEndOfSegment();
-////            ccLatestArea = ccLatestArea.generalize(ccSegmentIterator);
-////            ccAreas.add(ccLatestArea);
-////            ccNext = ccSegmentIterator.getBeginning();
-////            if (ccNext == vertex) {
-////                break;
-////            } else if (ccNext.isFixed()) {
-////                ccLatestArea = new Area(ccNext);
-////            }
-////        }
-////        // find the closest intersection to targetVertex
-////
-////        ArrayList<Vertex> possibilities = new ArrayList<>();
-////
-////        if (ccLatestArea.isContaining(targetVertex) && ccLatestArea.isContaining(targetVertex)) {
-////            possibilities.add(targetVertex);
-////        }
-////
-////        possibilities.addAll(ccLatestArea.thatContains(
-////                cLatestArea.Projection(vertex)));
-////
-////        possibilities.addAll(cLatestArea.thatContains(
-////                ccLatestArea.Projection(vertex)));
-////
-////        possibilities.addAll(cLatestArea.Intersect(ccLatestArea));
-////        //        possibilities.addAll(cLatestArea.(ccLatestArea));
-////        Vertex bestApproximation
-////                = Area.getClosestPossibility(possibilities, targetVertex);
-////        if (bestApproximation == null) {
-////            return false;
-////        }
-////        // launch exact movement for the approximation
-////        return tryMoveVertexExactly(vertex, bestApproximation, preferCloser);
-//    }
 
 }
