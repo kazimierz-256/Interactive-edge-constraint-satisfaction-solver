@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>
+            Grafika komputerowa - laboratorium 1 - dokumentacja
+        </title>
+        <meta charset="UTF-8">
+        <link href="https://fonts.googleapis.com/css?family=PT+Sans+Narrow:400,700|PT+Sans:400,400i,700,700i|PT+Serif:400,400i,700,700i&amp;subset=latin-ext"
+              rel="stylesheet">
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-size: 1em;
+                font-family: 'PT Serif';
+                padding: 1em 1em 0 1em;
+            }
+            /*ul.delim li:nth-child(n+2)::before {
+                content: "• ";
+                opacity: .3;
+                padding: 0 .5em;
+            }*/
+            /*ul.delim li {
+                display: inline;
+                margin: none;
+            }*/
+        </style>
+        <style>
+            main {
+                width: 50em;
+                margin: 0 auto;
+                overflow: hidden;
+            }
+
+            main a {
+                text-decoration: none;
+                /*color: hsl(208, 73%, 32%);*/
+                color: black;
+            }
+        </style>
+        <style>
+            article{
+                width:30em;
+                margin: 0 auto;
+            }
+            article header {
+                text-align: center;
+                margin: 8em 0;
+            }
+
+            .break{
+
+                page-break-after: always;
+            }
+
+            h1,
+            h2,
+            h3 {
+                font-weight: normal;
+            }
+
+            h1 {
+                font-size: 2.2em;
+            }
+
+            h2 {
+                font-size: 1.4em;
+            }
+
+            * {
+                background: rgba(0, 0, 0, .07);
+            }
+
+            section{
+                margin-bottom: 2em;
+            }
+
+        </style>
+    </head>
+
+    <body>
+        <article>
+            <header class="break">
+                <h1>Grafika Komputerowa</h1>
+                <h2>Laboratorium 1 &ndash; wielokąty z ograniczeniami</h2>
+                <h3>Kazimierz Wojciechowski</h3>
+            </header>
+            <section>
+                <h1>Skróty klawiaturowe</h1>
+                <p>Zdecydowałem się na obsługę wszystkich zdarzeń z poziomu adaptywnego menu kontekstowego.
+                    Grupuje komendy według nazw wielokątów, a następnie według kategorii klikniętego obiektu, czyli wielokąt, wierzchołek lub segment.</p>
+            </section>
+            <h1>Algorytm</h1>
+            <section>
+                <h2>Założenia i ograniczenia</h2>
+                <p>Zakładam, że żądane położenie wierzchołka jest możliwe do osiągnięcia.
+                    Oznacza to, że model spełni żądanie wytedy i tylko wtedy, gdy nowe położenie idealnie (co do epsilonu) spełnia żądanie oraz nie nagromadziło się dużo błędów numerycznych podczas rozwiązywania.</p><p>
+                    Z tego względu trudno jest spełnić żądanie dla krawędzi z ograniczeniem w pobliżu usztywnionego wierzchołka.
+
+                </p>
+                <h2>Pomysł</h2>
+                <p>Nadając żądanie zmiany położenia wierzchołka alogrytm odpowiednio uogólnia pewne pole powierzchni reprezentujące wszystkie punkty możliwe do osiągnięcia.
+                    Algorytm uogólnia pole zaczynając od pierścienia o zerowych promieniach i o środku identycznym z żądanym punktem.
+                    Następnie algorytm uogólnia pole według schemau:</p>
+            </section>
+        </article>
+    </body>
+
+</html>
