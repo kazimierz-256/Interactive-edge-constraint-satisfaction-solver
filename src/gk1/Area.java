@@ -78,14 +78,12 @@ public class Area {
                     if (R < ring.getSmallerRadius()) {
                         return new Area(new Ring(ring.getCenter(),
                                 r - R, d + R));
+                    } else if (R < r + d) {
+                        return new Area(new Ring(ring.getCenter(),
+                                0, d + R));
                     } else {
-                        if (R < r + d) {
-                            return new Area(new Ring(ring.getCenter(),
-                                    0, d + R));
-                        } else {
-                            return new Area(new Ring(ring.getCenter(),
-                                    R - d - r, d + R));
-                        }
+                        return new Area(new Ring(ring.getCenter(),
+                                R - d - r, d + R));
                     }
 
             }
@@ -119,11 +117,7 @@ public class Area {
     }
 
     public ArrayList<Vertex> Projection(Vertex vertex) {
-        if (isPromotedToBand) {
-            return Projection(vertex, band);
-        } else {
-            return Projection(vertex, ring);
-        }
+        return isPromotedToBand ? Projection(vertex, band) : Projection(vertex, ring);
     }
 
     private static ArrayList<Vertex> Projection(Vertex vertex, Band band) {

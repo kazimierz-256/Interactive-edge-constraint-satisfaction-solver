@@ -458,7 +458,7 @@ public class Polygon implements Drawable {
             }
         }
 
-        if (ccBestFound + ccBestFound > vertices.size()) {
+        if (cBestFound + ccBestFound > vertices.size()) {
             System.out.println("Too many moving vertices (> n)");
             return false;
         }
