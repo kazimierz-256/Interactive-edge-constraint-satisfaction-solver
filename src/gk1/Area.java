@@ -159,6 +159,10 @@ public class Area {
                 cy + cLarger * (vertex.getY() - cy)));
         list.add(new Vertex(cx - cLarger * (vertex.getX() - cx),
                 cy - cLarger * (vertex.getY() - cy)));
+
+        // TODO: improve using one iteration of Halley's or multivariable Newton's method
+        // 1. On the ring
+        // 2. proportions
         return list;
     }
 
@@ -199,6 +203,7 @@ public class Area {
             list.add(new Vertex(x, ring.getCenter().getY() - sqrtResult));
         }
 
+        // TODO: improve using one iteration of Halley's method
         return list;
     }
 
@@ -223,6 +228,7 @@ public class Area {
             list.add(new Vertex(ring.getCenter().getX() - sqrtResult, y));
         }
 
+        // TODO: improve using one iteration of Halley's method
         return list;
     }
 
@@ -253,14 +259,12 @@ public class Area {
                 constraintLength, ring.getSmallerRadius()));
         possibilities.addAll(IntersectRingsSubroutine(starting, ring.getCenter(),
                 constraintLength, ring.getLargerRadius()));
+
         return possibilities;
     }
 
     public ArrayList<Vertex> Intersect(Area area) {
-        ArrayList<Vertex> possibilities = new ArrayList<>();
-        possibilities.addAll(isPromotedToBand
-                ? area.Intersect(band) : area.Intersect(ring));
-        return possibilities;
+        return isPromotedToBand ? area.Intersect(band) : area.Intersect(ring);
     }
 
     public ArrayList<Vertex> Intersect(Band band) {
@@ -330,6 +334,14 @@ public class Area {
         double x2 = (c - b * y2) / a;
         possibilities.add(new Vertex(x1, y1));
         possibilities.add(new Vertex(x2, y2));
+
+        // TODO: improve using one iteration of multivariable Newton's method
+//        Vertex toOptimize = possibilities.get(0);
+//        ArrayList<Double> prim = new ArrayList<>();
+//        ArrayList<Double> f = new ArrayList<>();
+//        // TODO: complete the optimization procedure
+//        ArrayList<Double> result = NumericalOptimization.invert2by2matrix(prim, f);
+//        possibilities.set(0, new Vertex(result.get(0), result.get(1)));
         return possibilities;
     }
 
@@ -469,10 +481,10 @@ public class Area {
             return number;
         }
     }
+
 //    public Vertex getClosestPoint(Area areaToIntersect, Vertex target) {
-//        // a little bit tough...
-//        // implement later...
+//        // walks from a supposedly invariant vertex and comes up with
+//        // a closest point to the desired one, although not reachable one
 //        return null;
 //    }
-
 }

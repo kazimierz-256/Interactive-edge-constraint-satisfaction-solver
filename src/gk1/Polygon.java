@@ -476,6 +476,7 @@ public class Polygon implements Drawable {
                     cNewVertex, cTmpPrevious, cBackSegment, preferCloser);
 
             if (cNewVertex == null) {
+                java.awt.Toolkit.getDefaultToolkit().beep();
                 System.out.println("Numerical errors blew up");
                 return false;
             }
@@ -494,6 +495,7 @@ public class Polygon implements Drawable {
             ccNewVertex = ccAreas.get(i).getClosestPoint(
                     ccNewVertex, ccTmpPrevious, ccBackSegment, preferCloser);
             if (ccNewVertex == null) {
+                java.awt.Toolkit.getDefaultToolkit().beep();
                 System.out.println("Numerical errors blew up");
                 return false;
             }
