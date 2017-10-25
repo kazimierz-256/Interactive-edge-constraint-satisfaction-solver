@@ -34,7 +34,7 @@ public class GK1 extends Application {
             viewer.setHeight((double) newVal);
             model.draw(viewer);
         });
-        primaryStage.setTitle("nanoCAD");
+        primaryStage.setTitle("picoCAD");
         primaryStage.setScene(scene);
 //        primaryStage.setResizable(false);
         primaryStage.show();
