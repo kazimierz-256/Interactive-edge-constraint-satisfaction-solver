@@ -5,13 +5,26 @@
  */
 package gk1;
 
+import static java.lang.Math.abs;
+
 /**
  *
  * @author Kazimierz
  */
 public class Segment {
 
+    Boolean isSafeToRestrictVertical() {
+        return (beginning.getEndOfSegment().getConstraint() != segmentConstraint.vertical
+                && end.getBeginningOfSegment().getConstraint() != segmentConstraint.vertical);
+    }
+
+    Boolean isSafeToRestrictHorizontal() {
+        return (beginning.getEndOfSegment().getConstraint() != segmentConstraint.horizontal
+                && end.getBeginningOfSegment().getConstraint() != segmentConstraint.horizontal);
+    }
+
     public enum segmentConstraint {
+
         vertical,
         horizontal,
         fixedLength,
@@ -21,6 +34,7 @@ public class Segment {
     private double constraintLength;
     private Vertex beginning;
     private Vertex end;
+    private final double extremeThreshold = 20;
 
     @Override
     public String toString() {
@@ -83,5 +97,15 @@ public class Segment {
 
     public Vertex getCenter() {
         return new Vertex(getCenterX(), getCenterY());
+    }
+
+    public Boolean isAlmostVertical() {
+        return abs(end.getY() - beginning.getY())
+                > extremeThreshold * abs(end.getX() - beginning.getX());
+    }
+
+    public Boolean isAlmostHorizontal() {
+        return abs(end.getY() - beginning.getY()) * extremeThreshold
+                < abs(end.getX() - beginning.getX());
     }
 }

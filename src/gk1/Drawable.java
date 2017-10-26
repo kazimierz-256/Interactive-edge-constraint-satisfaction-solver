@@ -28,4 +28,5 @@ public interface Drawable {
 //    Reaction reactKey(UserAction.ActionType action, KeyEvent event);
     ArrayList<MenuItem> buildContextMenu(MouseEvent event);
 
+    Reaction toggleAutomaticRelations(Boolean isAutomatic);
 }

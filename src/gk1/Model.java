@@ -119,4 +119,13 @@ public class Model implements Drawable {
         return 0;
     }
 
+    @Override
+    public Reaction toggleAutomaticRelations(Boolean isAutomatic) {
+        Reaction mergedReaction = new Reaction();
+        drawables.forEach((drawable) -> {
+            mergedReaction.Merge(drawable.toggleAutomaticRelations(isAutomatic));
+        });
+        return mergedReaction;
+    }
+
 }

@@ -31,7 +31,7 @@ public class Viewer {
         this.height = height;
     }
 
-    public void draw(Segment segment) {
+    public void draw(Segment segment, boolean visualAid) {
 //        graphicsContext.strokeLine(
 //                segment.getBeginning().getX(),
 //                segment.getBeginning().getY(),
@@ -88,6 +88,22 @@ public class Viewer {
 //                graphicsContext.strokeRect(x, y, 10, 10);
                 graphicsContext.strokeText(
                         String.format("[%2.1f]", segment.getConstraintLength()), x, y);
+                break;
+            case free:
+                if (visualAid) {
+                    graphicsContext.setStroke(Color.BLUEVIOLET);
+                    if (segment.isAlmostHorizontal() && segment.isSafeToRestrictHorizontal()) {
+
+                        x = segment.getCenterX() - 10;
+                        y = segment.getCenterY() - 8;
+                        graphicsContext.strokeRect(x, y, 20, 4);
+                    } else if (segment.isAlmostVertical() && segment.isSafeToRestrictVertical()) {
+                        x = segment.getCenterX() + 4;
+                        y = segment.getCenterY() - 10;
+                        graphicsContext.strokeRect(x, y, 4, 20);
+                    }
+                    graphicsContext.setStroke(Color.BLACK);
+                }
                 break;
         }
     }
