@@ -25,6 +25,7 @@ public class GK1 extends Application {
     public void start(Stage primaryStage) throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource("FXMLDocument.fxml"));
         Scene scene = new Scene(root, 600, 600);
+        scene.getStylesheets().add("gk1/style.css");
         primaryStage.widthProperty().addListener((obs, oldVal, newVal) -> {
             viewer.setWidth((double) newVal);
             model.draw(viewer);

@@ -26,6 +26,30 @@ public class Polygon implements Drawable {
         return z;
     }
 
+    @Override
+    public Reaction toggleAutomaticRelations(Boolean isAutomatic) {
+        automaticRelations = isAutomatic;
+        return new Reaction(true, false, null);
+    }
+
+    private boolean trySnapEdges() {
+        Segment segment;
+        for (int i = 0, max = segments.size(); i < max; i++) {
+            segment = segments.get(i);
+            if (segment.getConstraint() == Segment.segmentConstraint.free) {
+                // todo: only if surrounding segments are not extreme
+                if (segment.isAlmostHorizontal()
+                        && segment.isSafeToRestrictHorizontal()) {
+                    segment.restrictHorizontal();
+                } else if (segment.isAlmostVertical()
+                        && segment.isSafeToRestrictVertical()) {
+                    segment.restrictVertical();
+                }
+            }
+        }
+        return true;
+    }
+
     public enum ActionState {
 
         moving,
@@ -40,6 +64,7 @@ public class Polygon implements Drawable {
         none
     }
 
+    private Boolean automaticRelations = false;
     private MoveEntity moveEntity;
     private Polygon backup;
     private Vertex moveVertex;
@@ -88,7 +113,7 @@ public class Polygon implements Drawable {
     @Override
     public void draw(Viewer viewer) {
         segments.forEach((segment) -> {
-            viewer.draw(segment);
+            viewer.draw(segment, automaticRelations);
         });
         vertices.forEach((vertex) -> {
             viewer.draw(vertex);
@@ -108,6 +133,7 @@ public class Polygon implements Drawable {
         if (this.state == ActionState.moving) {
             switch (moveEntity) {
                 case movingVertex:
+                    // TODO: draw snappable edges
                     reaction.mergeShouldRender(
                             tryMoveVertexExactly(moveVertex, position, true));
                     reaction.setDesiredCursor(Cursor.CROSSHAIR);
@@ -158,8 +184,15 @@ public class Polygon implements Drawable {
     @Override
     public Reaction mouseReleased(MouseEvent mouseEvent) {
         Reaction reaction = new Reaction();
-        Vertex position = new Vertex(mouseEvent.getX(), mouseEvent.getY());
         this.state = ActionState.idle;
+        // TODO: create a backup of polygon in case there is no possibility
+        if (automaticRelations) {
+            reaction.mergeShouldRender(
+                    trySnapEdges());
+            reaction.mergeShouldRender(
+                    tryMoveVertexExactly(moveVertex, moveVertex, true));
+        }
+
         return reaction;
     }
 
@@ -234,22 +267,26 @@ public class Polygon implements Drawable {
             menu.getItems().add(menuItem);
 
             // horizontal segment
-            menuItem = new MenuItem("Make horizontal if possible");
-            menuItem.setOnAction((ActionEvent e) -> {
-                if (tryHorizontal(segment)) {
-                    GK1.model.draw(GK1.viewer);
-                }
-            });
-            menu.getItems().add(menuItem);
+            if (segment.isSafeToRestrictHorizontal()) {
+                menuItem = new MenuItem("Make horizontal if possible");
+                menuItem.setOnAction((ActionEvent e) -> {
+                    if (tryHorizontal(segment)) {
+                        GK1.model.draw(GK1.viewer);
+                    }
+                });
+                menu.getItems().add(menuItem);
+            }
 
             // vertical segment
-            menuItem = new MenuItem("Make vertical if possible");
-            menuItem.setOnAction((ActionEvent e) -> {
-                if (tryVertical(segment)) {
-                    GK1.model.draw(GK1.viewer);
-                }
-            });
-            menu.getItems().add(menuItem);
+            if (segment.isSafeToRestrictVertical()) {
+                menuItem = new MenuItem("Make vertical if possible");
+                menuItem.setOnAction((ActionEvent e) -> {
+                    if (tryVertical(segment)) {
+                        GK1.model.draw(GK1.viewer);
+                    }
+                });
+                menu.getItems().add(menuItem);
+            }
 
             // fixed length segment
             menuItem = new MenuItem("Fix length if possible");
@@ -343,6 +380,9 @@ public class Polygon implements Drawable {
     }
 
     private boolean tryHorizontal(Segment segment) {
+        if (!segment.isSafeToRestrictHorizontal()) {
+            return false;
+        }
         segment.restrictHorizontal();
         boolean result = tryMoveVertexExactly(
                 segment.getBeginning(), segment.getBeginning(), true);
@@ -360,6 +400,9 @@ public class Polygon implements Drawable {
     }
 
     private boolean tryVertical(Segment segment) {
+        if (!segment.isSafeToRestrictVertical()) {
+            return false;
+        }
         segment.restrictVertical();
         boolean result = tryMoveVertexExactly(
                 segment.getBeginning(), segment.getBeginning(), true);

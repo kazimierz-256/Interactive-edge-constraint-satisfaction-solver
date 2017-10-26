@@ -8,6 +8,7 @@ package gk1;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
@@ -28,6 +29,20 @@ public class FXMLDocumentController implements Initializable {
 
     @FXML
     private Canvas drawing;
+
+    @FXML
+    private void automaticToggle(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+        Reaction reaction = GK1.model.toggleAutomaticRelations(newValue);
+        if (reaction.isShouldRender()) {
+            GK1.model.draw(GK1.viewer);
+        }
+
+        if (reaction.isShouldChangeCursor()) {
+            drawing.setCursor(reaction.getDesiredCursor());
+        } else {
+            drawing.setCursor(Cursor.DEFAULT);
+        }
+    }
 
     @FXML
     private void mouseMoved(MouseEvent mouseEvent) {
