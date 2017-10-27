@@ -7,6 +7,7 @@ package gk1;
 
 import java.util.ArrayList;
 import javafx.event.ActionEvent;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
@@ -75,6 +76,7 @@ public class Model implements Drawable {
                     result = "George";
                 }
                 Polygon newPolygon = new Polygon(result, getNextZ(),
+                        ((CheckBox) GK1.accessScene.lookup("#automaticRelations")).isSelected(),
                         new Vertex(x, y, true),
                         new Vertex(x + 200, y),
                         new Vertex(x, y + 200));

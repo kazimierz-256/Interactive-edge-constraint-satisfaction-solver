@@ -64,7 +64,7 @@ public class Polygon implements Drawable {
         none
     }
 
-    private Boolean automaticRelations = false;
+    private Boolean automaticRelations;
     private MoveEntity moveEntity;
     private Polygon backup;
     private Vertex moveVertex;
@@ -79,20 +79,20 @@ public class Polygon implements Drawable {
     private String name;
     private double z;
 
-    public Polygon(String name, double z, Vertex... vertices) {
-        this(name, z, new ArrayList<>(Arrays.asList(vertices)));
+    public Polygon(String name, double z, Boolean automaticRelations, Vertex... vertices) {
+        this(name, z, automaticRelations, new ArrayList<>(Arrays.asList(vertices)));
     }
 
-    public Polygon(String name, double z, ArrayList<Vertex> vertices) {
+    public Polygon(String name, double z, Boolean automaticRelations, ArrayList<Vertex> vertices) {
         if (vertices.size() < 3) {
             //throw new Exception("A polygon has to have at least three vertices.");
             return;
         }
-
         this.name = name;
         this.vertices = new ArrayList<>();
         this.segments = new ArrayList<>();
         this.z = z;
+        this.automaticRelations = automaticRelations;
 
         vertices.forEach((vertex) -> {
             this.vertices.add(vertex.cloneWithoutSegments());
@@ -123,7 +123,7 @@ public class Polygon implements Drawable {
     private void makeBackupOfPolygon() {
         // be careful, line restrictions are not copied over
         // created lines will become loose!
-        backup = new Polygon(name, z, vertices);
+        backup = new Polygon(name, z, automaticRelations, vertices);
     }
 
     @Override

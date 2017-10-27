@@ -20,12 +20,14 @@ public class GK1 extends Application {
 
     public static Model model;
     public static Viewer viewer;
+    public static Scene accessScene;
 
     @Override
     public void start(Stage primaryStage) throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource("FXMLDocument.fxml"));
         Scene scene = new Scene(root, 600, 600);
         scene.getStylesheets().add("gk1/style.css");
+        GK1.accessScene = scene;
         primaryStage.widthProperty().addListener((obs, oldVal, newVal) -> {
             viewer.setWidth((double) newVal);
             model.draw(viewer);

@@ -13,6 +13,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
@@ -29,6 +30,7 @@ public class FXMLDocumentController implements Initializable {
 
     @FXML
     private Canvas drawing;
+    public CheckBox automaticRelations;
 
     @FXML
     private void automaticToggle(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
