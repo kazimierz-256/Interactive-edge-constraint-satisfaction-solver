@@ -5,7 +5,11 @@
  */
 package gk1;
 
-import static java.lang.Math.abs;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.WritableRaster;
+import java.util.stream.IntStream;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.PixelWriter;
@@ -17,6 +21,7 @@ import javafx.scene.paint.Color;
  */
 public class Viewer {
 
+    private Model lastDrawnModel;
     private Canvas drawing;
     private GraphicsContext graphicsContext;
     private PixelWriter pixelWriter;
@@ -32,43 +37,39 @@ public class Viewer {
     }
 
     public void draw(Segment segment, boolean visualAid) {
-//        graphicsContext.strokeLine(
-//                segment.getBeginning().getX(),
-//                segment.getBeginning().getY(),
-//                segment.getEnd().getX(),
-//                segment.getEnd().getY());
-        Vertex b = segment.getBeginning();
-        Vertex e = segment.getEnd();
-        boolean steep = abs(e.getY() - b.getY()) > abs(e.getX() - b.getX());
-        if (b.getX() > e.getX()) {
-            if (b.getY() > e.getY()) {
-                if (steep) {
-                    BresenhamSteepUp(e, b);
-                } else {
-                    BresenhamUp(e, b);
-                }
-            } else {
-                if (steep) {
-                    BresenhamSteepDown(e, b);
-                } else {
-                    BresenhamDown(e, b);
-                }
-            }
-        } else {
-            if (e.getY() > b.getY()) {
-                if (steep) {
-                    BresenhamSteepUp(b, e);
-                } else {
-                    BresenhamUp(b, e);
-                }
-            } else {
-                if (steep) {
-                    BresenhamSteepDown(b, e);
-                } else {
-                    BresenhamDown(b, e);
-                }
-            }
-        }
+        graphicsContext.strokeLine(
+                segment.getBeginning().getX(),
+                segment.getBeginning().getY(),
+                segment.getEnd().getX(),
+                segment.getEnd().getY());
+
+        // I DISLIKE SLOW SETPIXELS
+//        Vertex b = segment.getBeginning();
+//        Vertex e = segment.getEnd();
+//        boolean steep = abs(e.getY() - b.getY()) > abs(e.getX() - b.getX());
+//        if (b.getX() > e.getX()) {
+//            if (b.getY() > e.getY()) {
+//                if (steep) {
+//                    BresenhamSteepUp(e, b);
+//                } else {
+//                    BresenhamUp(e, b);
+//                }
+//            } else if (steep) {
+//                BresenhamSteepDown(e, b);
+//            } else {
+//                BresenhamDown(e, b);
+//            }
+//        } else if (e.getY() > b.getY()) {
+//            if (steep) {
+//                BresenhamSteepUp(b, e);
+//            } else {
+//                BresenhamUp(b, e);
+//            }
+//        } else if (steep) {
+//            BresenhamSteepDown(b, e);
+//        } else {
+//            BresenhamDown(b, e);
+//        }
         double x, y;
 
         switch (segment.getConstraint()) {
@@ -251,6 +252,37 @@ public class Viewer {
         graphicsContext.strokeText(vertex.toString(), x, y - 10);
     }
 
+    public static BufferedImage getImageFromArray(int[] pixels, int width, int height) {
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        WritableRaster raster = (WritableRaster) image.getData();
+        raster.setPixels(0, 0, width, height, pixels);
+        return image;
+    }
+
+    private void drawImage() {
+        // performance: https://stackoverflow.com/questions/6524196/java-get-pixel-array-from-image
+        //more: https://gamedev.stackexchange.com/questions/82909/how-do-i-rotate-and-flip-2d-sprites-stored-in-a-1d-array-of-pixels
+        //
+//            canvasImage = new BufferedImage(
+//                getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+//            canvasPixels = PixelImages.getPixels(canvasImage);
+        BufferedImage bi = new BufferedImage((int) width, (int) height, BufferedImage.TYPE_INT_ARGB);
+
+        int totalSize = (int) (width * height);
+        int[] iArray = new int[totalSize];
+        int ih = (int) height;
+        DataBuffer db = bi.getRaster().getDataBuffer();
+        IntStream.range(0, totalSize).parallel().forEach(i -> {
+            db.setElem(i, 0xaaffffff);
+        });
+//        for (int i = 0; i < width; i++) {
+//            for (int j = 0; j < height; j++) {
+//                db.setElem(i * (ih) + j, 0xaaffffff);
+//            }
+//        }
+        graphicsContext.drawImage(SwingFXUtils.toFXImage(bi, null), 0, 0, width, height);
+    }
+
     public void clear() {
         graphicsContext.clearRect(0, 0, width, height);
     }
@@ -265,13 +297,19 @@ public class Viewer {
         drawing.setHeight(height);
     }
 
+    void drawLastModel() {
+        drawModel(lastDrawnModel);
+    }
+
     void drawModel(Model model) {
+        lastDrawnModel = model;
         long startTime = System.nanoTime();
+        clear();
         GK1.model.draw(GK1.viewer);
         double elapsedTimeSeconds
                 = (double) ((System.nanoTime() - startTime)) / 1000_000_000d;
         double fps = 1 / elapsedTimeSeconds;
-        System.out.println(String.format("%g fps", fps));
+//        System.out.println(String.format("%g fps", fps));
     }
 
 }

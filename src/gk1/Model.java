@@ -37,8 +37,6 @@ public class Model implements Drawable {
 
     @Override
     public void draw(Viewer viewer) {
-        // clear the canvas
-        viewer.clear();
 
         // draw each subdrawable
         drawables.forEach((drawable) -> {

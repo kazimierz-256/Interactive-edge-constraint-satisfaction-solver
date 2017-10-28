@@ -263,7 +263,7 @@ public class Polygon implements Drawable {
             MenuItem menuItem = new MenuItem("Add vertex in the middle");
             menuItem.setOnAction((ActionEvent e) -> {
                 addVertexInbetween(segment);
-                GK1.model.draw(GK1.viewer);
+                GK1.viewer.drawLastModel();
             });
             menu.getItems().add(menuItem);
 
@@ -272,7 +272,7 @@ public class Polygon implements Drawable {
                 menuItem = new MenuItem("Make horizontal if possible");
                 menuItem.setOnAction((ActionEvent e) -> {
                     if (tryHorizontal(segment)) {
-                        GK1.model.draw(GK1.viewer);
+                        GK1.viewer.drawLastModel();
                     }
                 });
                 menu.getItems().add(menuItem);
@@ -283,7 +283,7 @@ public class Polygon implements Drawable {
                 menuItem = new MenuItem("Make vertical if possible");
                 menuItem.setOnAction((ActionEvent e) -> {
                     if (tryVertical(segment)) {
-                        GK1.model.draw(GK1.viewer);
+                        GK1.viewer.drawLastModel();
                     }
                 });
                 menu.getItems().add(menuItem);
@@ -293,7 +293,7 @@ public class Polygon implements Drawable {
             menuItem = new MenuItem("Fix length if possible");
             menuItem.setOnAction((ActionEvent e) -> {
                 if (tryFixedLength(segment)) {
-                    GK1.model.draw(GK1.viewer);
+                    GK1.viewer.drawLastModel();
                 }
             });
             menu.getItems().add(menuItem);
@@ -303,7 +303,7 @@ public class Polygon implements Drawable {
                 menuItem = new MenuItem("Free");
                 menuItem.setOnAction((ActionEvent e) -> {
                     segment.restrictFree();
-                    GK1.model.draw(GK1.viewer);
+                    GK1.viewer.drawLastModel();
                 });
                 menu.getItems().add(menuItem);
 
@@ -322,7 +322,7 @@ public class Polygon implements Drawable {
                 menuItem = new MenuItem("Remove");
                 menuItem.setOnAction((ActionEvent e) -> {
                     removeVertex(vertex);
-                    GK1.model.draw(GK1.viewer);
+                    GK1.viewer.drawLastModel();
                 });
                 menu.getItems().add(menuItem);
             }
@@ -332,7 +332,7 @@ public class Polygon implements Drawable {
                     vertex.isFixed() ? "Unfreeze" : "Freeze"));
             menuItem.setOnAction((ActionEvent e) -> {
                 vertex.setFixed(!vertex.isFixed());
-                GK1.model.draw(GK1.viewer);
+                GK1.viewer.drawLastModel();
             });
             menu.getItems().add(menuItem);
 
@@ -343,7 +343,7 @@ public class Polygon implements Drawable {
             MenuItem menuItem = new MenuItem("Remove polygon");
             menuItem.setOnAction((ActionEvent e) -> {
                 GK1.model.unregisterDrawable(this);
-                GK1.model.draw(GK1.viewer);
+                GK1.viewer.drawLastModel();
             });
             menuItems.add(menuItem);
         }
