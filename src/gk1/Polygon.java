@@ -189,8 +189,14 @@ public class Polygon implements Drawable {
         if (automaticRelations) {
             reaction.mergeShouldRender(
                     trySnapEdges());
-            reaction.mergeShouldRender(
-                    tryMoveVertexExactly(moveVertex, moveVertex, true));
+
+            if (moveVertex == null) {
+                reaction.mergeShouldRender(
+                        tryMoveVertexExactly(vertices.get(0), vertices.get(0), true));
+            } else {
+                reaction.mergeShouldRender(
+                        tryMoveVertexExactly(moveVertex, moveVertex, true));
+            }
         }
 
         return reaction;
