@@ -265,4 +265,13 @@ public class Viewer {
         drawing.setHeight(height);
     }
 
+    void drawModel(Model model) {
+        long startTime = System.nanoTime();
+        GK1.model.draw(GK1.viewer);
+        double elapsedTimeSeconds
+                = (double) ((System.nanoTime() - startTime)) / 1000_000_000d;
+        double fps = 1 / elapsedTimeSeconds;
+        System.out.println(String.format("%g fps", fps));
+    }
+
 }

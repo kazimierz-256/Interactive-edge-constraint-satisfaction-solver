@@ -186,17 +186,12 @@ public class Polygon implements Drawable {
         Reaction reaction = new Reaction();
         this.state = ActionState.idle;
         // TODO: create a backup of polygon in case there is no possibility
-        if (automaticRelations) {
+        if (automaticRelations && moveVertex != null) {
             reaction.mergeShouldRender(
                     trySnapEdges());
 
-            if (moveVertex == null) {
-                reaction.mergeShouldRender(
-                        tryMoveVertexExactly(vertices.get(0), vertices.get(0), true));
-            } else {
-                reaction.mergeShouldRender(
-                        tryMoveVertexExactly(moveVertex, moveVertex, true));
-            }
+            reaction.mergeShouldRender(
+                    tryMoveVertexExactly(moveVertex, moveVertex, true));
         }
 
         return reaction;

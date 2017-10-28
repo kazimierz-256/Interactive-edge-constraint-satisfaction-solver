@@ -36,7 +36,7 @@ public class FXMLDocumentController implements Initializable {
     private void automaticToggle(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
         Reaction reaction = GK1.model.toggleAutomaticRelations(newValue);
         if (reaction.isShouldRender()) {
-            GK1.model.draw(GK1.viewer);
+            GK1.viewer.drawModel(GK1.model);
         }
 
         if (reaction.isShouldChangeCursor()) {
@@ -50,7 +50,7 @@ public class FXMLDocumentController implements Initializable {
     private void mouseMoved(MouseEvent mouseEvent) {
         Reaction reaction = GK1.model.mouseMoved(mouseEvent);
         if (reaction.isShouldRender()) {
-            GK1.model.draw(GK1.viewer);
+            GK1.viewer.drawModel(GK1.model);
         }
 
         if (reaction.isShouldChangeCursor()) {
@@ -75,7 +75,7 @@ public class FXMLDocumentController implements Initializable {
         } else {
             // just clicked!
             Reaction reaction = GK1.model.mousePressed(mouseEvent);
-            GK1.model.draw(GK1.viewer);
+            GK1.viewer.drawModel(GK1.model);
 
         }
     }
@@ -84,7 +84,7 @@ public class FXMLDocumentController implements Initializable {
     private void mouseReleased(MouseEvent mouseEvent) {
         Reaction reaction = GK1.model.mouseReleased(mouseEvent);
         if (reaction.isShouldRender()) {
-            GK1.model.draw(GK1.viewer);
+            GK1.viewer.drawModel(GK1.model);
         }
     }
 
@@ -98,6 +98,6 @@ public class FXMLDocumentController implements Initializable {
 
         GK1.model = new Model();
         GK1.viewer = new Viewer(drawing, 600, 600);
-        GK1.model.draw(GK1.viewer);
+        GK1.viewer.drawModel(GK1.model);
     }
 }
