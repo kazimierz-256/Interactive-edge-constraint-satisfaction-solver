@@ -11,6 +11,7 @@ import gk1.textures.Texture;
 import java.awt.image.BufferedImage;
 import static java.lang.Math.sqrt;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import javafx.event.ActionEvent;
@@ -83,7 +84,8 @@ public class Polygon implements Drawable {
         int intBottommost = (int) Math.floor(bottommost);
         int width = (int) Math.ceil(rightmost - leftmost);
         int height = (int) Math.ceil(topmost - bottommost);
-        BufferedImage generatedTexture = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        int[] pixels = new int[width * height];
+        Arrays.fill(pixels, 0xccffaabb);
         // bucketsort edges
         LinkedList<ActiveEdge>[] edgeTable = new LinkedList[height];
         for (int i = 0; i < height; i++) {
@@ -101,7 +103,7 @@ public class Polygon implements Drawable {
             // now the following is true: lower.y <= upper.y
 
             // make sure index is always correctly assigned
-            int index = (int) Math.floor(lower.getY());
+            int index = (int) Math.floor(lower.getY() - bottommost);
 
             // watch out for division by zero
             double inversem = (upper.getX() - lower.getX())
@@ -113,11 +115,12 @@ public class Polygon implements Drawable {
         LinkedList<ActiveEdge> activeEdges = new LinkedList<>();
 
         // fill a bufferedimage with pixels using the texture field
-        for (int i = 0, max = edgeTable.length; i < max; i++) {
-            if (edgeTable[i].size() % 2 == 1) {
-                // cannot draw! since line has to intersect only even number
-                return;
-            }
+        for (int i = 0; i < height; i++) {
+//            if (edgeTable[i].size() % 2 == 1) {
+//                // cannot draw! since line has to intersect only even number
+//                System.out.println("oh noes only one vertex");
+//                return;
+//            }
             if (!edgeTable[i].isEmpty()) {
                 //https://docs.oracle.com/javase/7/docs/api/java/util/LinkedList.html#fields_inherited_from_class_java.util.AbstractList
                 // constant time
@@ -128,16 +131,16 @@ public class Polygon implements Drawable {
             // sorted, now draw!
             boolean beginDrawing = false;
             ActiveEdge lastEdge = null;
+
             for (ActiveEdge edge : activeEdges) {
                 if (beginDrawing) {
                     if (Double.isInfinite(lastEdge.x)) {
                         return;
                     }
-                    for (int j = (int) Math.floor(lastEdge.x); j < edge.x; j++) {
-                        generatedTexture.getData().getDataBuffer().setElem(
-                                i * width + j,
-                                texture.getPixel(i, j, model.getLights()
-                                ));
+                    for (int j = (int) Math.floor(lastEdge.x) - intLeftmost,
+                            max = (int) Math.floor(edge.x) - intLeftmost; j < max; j++) {
+                        pixels[i * width + j]
+                                = texture.getPixel(i, j, model.getLights());
                     }
                     beginDrawing = false;
                 } else {
@@ -150,7 +153,7 @@ public class Polygon implements Drawable {
             LinkedList<ActiveEdge> toDelete = new LinkedList<>();
 
             for (ActiveEdge edge : activeEdges) {
-                if (edge.y_max >= i + intBottommost) {
+                if ((int) edge.y_max <= i + intBottommost) {
                     toDelete.add(edge);
                     continue;
                 }
@@ -158,9 +161,14 @@ public class Polygon implements Drawable {
                 edge.x += edge.m_inverse;
             }
 
-            activeEdges.removeAll(toDelete);
+            if (!toDelete.isEmpty()) {
+                activeEdges.removeAll(toDelete);
+            }
+
         }
 
+        BufferedImage generatedTexture = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        generatedTexture.getRaster().setDataElements(0, 0, width, height, pixels);
         // paint the image
         viewer.drawImage(generatedTexture, intLeftmost, intBottommost, width, height);
     }

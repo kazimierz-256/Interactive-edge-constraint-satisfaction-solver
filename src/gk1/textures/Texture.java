@@ -19,9 +19,12 @@ public class Texture {
     private CachedImage heights;
 
     public Texture() {
-        texture = new CachedImage("gk1/texture.jpg");
-        normals = new CachedImage("gk1/normals.jpg");
-        heights = new CachedImage("gk1/highlights.jpg");
+//        texture = new CachedImage("gk1/texture.jpg");
+//        normals = new CachedImage("gk1/normals.jpg");
+//        heights = new CachedImage("gk1/highlights.jpg");
+        texture = new CachedImage(0);
+        normals = new CachedImage(0x123456);
+        heights = new CachedImage(0xac45e7f);
     }
 
     public Texture(CachedImage texture, CachedImage normals, CachedImage heights) {
@@ -31,7 +34,7 @@ public class Texture {
     }
 
     public int getPixel(int x, int y, Collection<LightSource> lights) {
-        return 0;
+        return 0xaaffffff;
     }
 
     public CachedImage getTexture() {

@@ -80,8 +80,8 @@ public class Model {
                         ((CheckBox) GK1.accessScene.lookup("#automaticRelations")).isSelected(),
                         Arrays.asList(
                                 new Vertex(x, y, true),
-                                new Vertex(x + 200, y),
-                                new Vertex(x, y + 200))
+                                new Vertex(x + 200, y + 50),
+                                new Vertex(x + 50, y + 200))
                 );
                 registerDrawable(newPolygon);
                 GK1.model.draw(GK1.viewer);
