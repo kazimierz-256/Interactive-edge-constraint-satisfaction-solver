@@ -18,6 +18,18 @@ public class Texture {
     private CachedImage normals;
     private CachedImage heights;
 
+    public Texture() {
+        texture = new CachedImage("gk1/texture.jpg");
+        normals = new CachedImage("gk1/normals.jpg");
+        heights = new CachedImage("gk1/highlights.jpg");
+    }
+
+    public Texture(CachedImage texture, CachedImage normals, CachedImage heights) {
+        this.texture = texture;
+        this.normals = normals;
+        this.heights = heights;
+    }
+
     public int getPixel(int x, int y, Collection<LightSource> lights) {
         return 0;
     }

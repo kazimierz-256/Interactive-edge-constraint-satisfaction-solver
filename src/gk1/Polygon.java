@@ -5,6 +5,7 @@
  */
 package gk1;
 
+import static gk1.GK1.model;
 import gk1.areas.Area;
 import gk1.textures.Texture;
 import java.awt.image.BufferedImage;
@@ -54,7 +55,7 @@ public class Polygon implements Drawable {
         return true;
     }
 
-    private void drawTexture(Viewer viewer) {
+    private void drawTexture(Viewer viewer, Model context) {
         double leftmost = vertices.get(0).getX();
         double topmost = vertices.get(0).getY();
         double rightmost = leftmost;
@@ -97,7 +98,7 @@ public class Polygon implements Drawable {
                 lower = upper;
                 upper = tmp;
             }
-            // lower.y <= upper.y
+            // now the following is true: lower.y <= upper.y
 
             // make sure index is always correctly assigned
             int index = (int) Math.floor(lower.getY());
@@ -110,6 +111,7 @@ public class Polygon implements Drawable {
         }
 
         LinkedList<ActiveEdge> activeEdges = new LinkedList<>();
+
         // fill a bufferedimage with pixels using the texture field
         for (int i = 0, max = edgeTable.length; i < max; i++) {
             if (edgeTable[i].size() % 2 == 1) {
@@ -117,23 +119,43 @@ public class Polygon implements Drawable {
                 return;
             }
             if (!edgeTable[i].isEmpty()) {
-                // nothing to be added here
+                //https://docs.oracle.com/javase/7/docs/api/java/util/LinkedList.html#fields_inherited_from_class_java.util.AbstractList
+                // constant time
                 activeEdges.addAll(edgeTable[i]);
                 activeEdges.sort((edge1, edge2) -> Double.compare(edge1.x, edge2.x));
             }
 
             // sorted, now draw!
-            //TODOTODOTODOTODO
-            // increment and remove!
+            boolean beginDrawing = false;
+            ActiveEdge lastEdge = null;
+            for (ActiveEdge edge : activeEdges) {
+                if (beginDrawing) {
+                    if (Double.isInfinite(lastEdge.x)) {
+                        return;
+                    }
+                    for (int j = (int) Math.floor(lastEdge.x); j < edge.x; j++) {
+                        generatedTexture.getData().getDataBuffer().setElem(
+                                i * width + j,
+                                texture.getPixel(i, j, model.getLights()
+                                ));
+                    }
+                    beginDrawing = false;
+                } else {
+                    lastEdge = edge;
+                    beginDrawing = true;
+                }
+            }
+
+            // increment x coordinates and remove edges below the scanline!
             LinkedList<ActiveEdge> toDelete = new LinkedList<>();
 
             for (ActiveEdge edge : activeEdges) {
-                if (edge.ymax >= i + intBottommost) {
+                if (edge.y_max >= i + intBottommost) {
                     toDelete.add(edge);
                     continue;
                 }
 
-                edge.x += edge.minverse;
+                edge.x += edge.m_inverse;
             }
 
             activeEdges.removeAll(toDelete);
@@ -199,7 +221,7 @@ public class Polygon implements Drawable {
     }
 
     @Override
-    public void draw(Viewer viewer) {
+    public void draw(Viewer viewer, Model context) {
         segments.forEach((segment) -> {
             viewer.draw(segment, automaticRelations);
         });
@@ -207,7 +229,7 @@ public class Polygon implements Drawable {
             viewer.draw(vertex);
         });
 
-        drawTexture(viewer);
+        drawTexture(viewer, model);
     }
 
     private void makeBackupOfPolygon() {

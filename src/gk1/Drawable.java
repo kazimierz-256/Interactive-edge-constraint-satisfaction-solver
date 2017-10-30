@@ -17,7 +17,7 @@ public interface Drawable {
 
     double getZ();
 
-    void draw(Viewer viewer);
+    void draw(Viewer viewer, Model context);
 
     Reaction mouseMoved(MouseEvent mouseEvent);
 

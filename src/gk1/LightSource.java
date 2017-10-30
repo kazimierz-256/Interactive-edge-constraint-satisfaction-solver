@@ -29,12 +29,6 @@ public class LightSource implements Drawable {
     }
 
     @Override
-    public void draw(Viewer viewer) {
-        // just draw a normal single vertex
-        viewer.draw(getPosition());
-    }
-
-    @Override
     public Reaction mouseMoved(MouseEvent mouseEvent) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -73,6 +67,12 @@ public class LightSource implements Drawable {
 
     public void setLight(int light) {
         this.light = light;
+    }
+
+    @Override
+    public void draw(Viewer viewer, Model context) {
+        // just draw a normal single vertex
+        viewer.draw(getPosition());
     }
 
 }

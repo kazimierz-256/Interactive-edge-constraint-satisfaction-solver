@@ -25,20 +25,21 @@ public class CachedImage {
         stretch
     }
 
-    public void setConstantColour(int colour) {
-        image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-        image.getData().getDataBuffer().setElem(0, colour);
-        method = fillMethod.repeat;
-    }
+    public CachedImage(String filesrc) {
 
-    public void setImage(String filesrc, fillMethod method) {
         BufferedImage temporaryImage = null;
         try {
             temporaryImage = ImageIO.read(new File(filesrc));
         } catch (IOException e) {
         }
         image = temporaryImage;
-        this.method = method;
+        this.method = fillMethod.repeat;
+    }
+
+    public CachedImage(int colour) {
+        image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        image.getData().getDataBuffer().setElem(0, colour);
+        method = fillMethod.repeat;
     }
 
     public int getPixel(int x, int y) {

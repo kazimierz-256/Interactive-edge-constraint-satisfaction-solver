@@ -6,9 +6,7 @@
 package gk1;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
-import java.util.stream.IntStream;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -263,25 +261,24 @@ public class Viewer {
         graphicsContext.drawImage(SwingFXUtils.toFXImage(image, null), x, y, width, height);
     }
 
-    private void drawImageEXPERIMENTAL() {
-        // performance: https://stackoverflow.com/questions/6524196/java-get-pixel-array-from-image
-        //more: https://gamedev.stackexchange.com/questions/82909/how-do-i-rotate-and-flip-2d-sprites-stored-in-a-1d-array-of-pixels
-        //
-//            canvasImage = new BufferedImage(
-//                getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
-//            canvasPixels = PixelImages.getPixels(canvasImage);
-        BufferedImage bi = new BufferedImage((int) width, (int) height, BufferedImage.TYPE_INT_ARGB);
-
-        int totalSize = (int) (width * height);
-        int[] iArray = new int[totalSize];
-        int ih = (int) height;
-        DataBuffer db = bi.getRaster().getDataBuffer();
-        IntStream.range(0, totalSize).parallel().forEach(i -> {
-            db.setElem(i, 0xaaffffff);
-        });
-        graphicsContext.drawImage(SwingFXUtils.toFXImage(bi, null), 0, 0, width, height);
-    }
-
+//    private void drawImageEXPERIMENTAL() {
+//        // performance: https://stackoverflow.com/questions/6524196/java-get-pixel-array-from-image
+//        //more: https://gamedev.stackexchange.com/questions/82909/how-do-i-rotate-and-flip-2d-sprites-stored-in-a-1d-array-of-pixels
+//        //
+////            canvasImage = new BufferedImage(
+////                getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+////            canvasPixels = PixelImages.getPixels(canvasImage);
+//        BufferedImage bi = new BufferedImage((int) width, (int) height, BufferedImage.TYPE_INT_ARGB);
+//
+//        int totalSize = (int) (width * height);
+//        int[] iArray = new int[totalSize];
+//        int ih = (int) height;
+//        DataBuffer db = bi.getRaster().getDataBuffer();
+//        IntStream.range(0, totalSize).parallel().forEach(i -> {
+//            db.setElem(i, 0xaaffffff);
+//        });
+//        graphicsContext.drawImage(SwingFXUtils.toFXImage(bi, null), 0, 0, width, height);
+//    }
     public void clear() {
         graphicsContext.clearRect(0, 0, width, height);
     }

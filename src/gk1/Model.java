@@ -7,6 +7,7 @@ package gk1;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import javafx.event.ActionEvent;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Menu;
@@ -18,10 +19,11 @@ import javafx.scene.input.MouseEvent;
  *
  * @author Kazimierz
  */
-public class Model implements Drawable {
+public class Model {
 
     private ArrayList<Drawable> drawables = new ArrayList<>();
     private double zCounter = 0;
+    private Collection<LightSource> lights;
 
     public double getNextZ() {
         return zCounter++;
@@ -36,16 +38,14 @@ public class Model implements Drawable {
         drawables.remove(drawable);
     }
 
-    @Override
     public void draw(Viewer viewer) {
 
         // draw each subdrawable
         drawables.forEach((drawable) -> {
-            drawable.draw(viewer);
+            drawable.draw(viewer, this);
         });
     }
 
-    @Override
     public ArrayList<MenuItem> buildContextMenu(MouseEvent event) {
         // gather all MenuItems from all objects in an organized manner
 
@@ -92,7 +92,6 @@ public class Model implements Drawable {
         return mainMenuItems;
     }
 
-    @Override
     public Reaction mouseMoved(MouseEvent mouseEvent) {
         Reaction mergedReaction = new Reaction();
         drawables.forEach((drawable) -> {
@@ -101,7 +100,6 @@ public class Model implements Drawable {
         return mergedReaction;
     }
 
-    @Override
     public Reaction mousePressed(MouseEvent mouseEvent) {
         Reaction mergedReaction = new Reaction();
         drawables.forEach((drawable) -> {
@@ -110,7 +108,6 @@ public class Model implements Drawable {
         return mergedReaction;
     }
 
-    @Override
     public Reaction mouseReleased(MouseEvent mouseEvent) {
         Reaction mergedReaction = new Reaction();
         drawables.forEach((drawable) -> {
@@ -119,18 +116,20 @@ public class Model implements Drawable {
         return mergedReaction;
     }
 
-    @Override
-    public double getZ() {
-        return 0;
-    }
-
-    @Override
     public Reaction toggleAutomaticRelations(Boolean isAutomatic) {
         Reaction mergedReaction = new Reaction();
         drawables.forEach((drawable) -> {
             mergedReaction.Merge(drawable.toggleAutomaticRelations(isAutomatic));
         });
         return mergedReaction;
+    }
+
+    public Collection<LightSource> getLights() {
+        return lights;
+    }
+
+    public void setLights(Collection<LightSource> lights) {
+        this.lights = lights;
     }
 
 }

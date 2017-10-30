@@ -11,13 +11,13 @@ package gk1;
  */
 public class ActiveEdge {
 
-    public double ymax;
+    public double y_max;
     public double x;
-    public double minverse;
+    public double m_inverse;
 
-    public ActiveEdge(double ymax, double x, double minverse) {
-        this.ymax = ymax;
+    public ActiveEdge(double y_max, double x, double m_inverse) {
+        this.y_max = y_max;
         this.x = x;
-        this.minverse = minverse;
+        this.m_inverse = m_inverse;
     }
 }
