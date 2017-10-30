@@ -63,9 +63,11 @@ public class Polygon implements Drawable {
         double bottommost = topmost;
         double x, y;
 
+        Vertex lower, upper, tmp;
         for (int i = 1, max = vertices.size(); i < max; i++) {
-            x = vertices.get(i).getX();
-            y = vertices.get(i).getY();
+            tmp = vertices.get(i).castToInt2d();
+            x = tmp.getX();
+            y = tmp.getY();
 
             if (x < leftmost) {
                 leftmost = x;
@@ -80,10 +82,10 @@ public class Polygon implements Drawable {
             }
         }
 
-        int intLeftmost = (int) Math.floor(leftmost);
-        int intBottommost = (int) Math.floor(bottommost);
-        int width = (int) Math.ceil(rightmost - leftmost);
-        int height = (int) Math.ceil(topmost - bottommost);
+        int intLeftmost = (int) (leftmost);
+        int intBottommost = (int) (bottommost);
+        int width = (int) (rightmost - leftmost);
+        int height = (int) (topmost - bottommost);
         int[] pixels = new int[width * height];
         Arrays.fill(pixels, 0xccffaabb);
         // bucketsort edges
@@ -91,7 +93,7 @@ public class Polygon implements Drawable {
         for (int i = 0; i < height; i++) {
             edgeTable[i] = new LinkedList<>();
         }
-        Vertex lower, upper, tmp;
+
         for (int i = 0, max = segments.size(); i < max; i++) {
             lower = segments.get(i).getBeginning();
             upper = segments.get(i).getEnd();
@@ -103,13 +105,13 @@ public class Polygon implements Drawable {
             // now the following is true: lower.y <= upper.y
 
             // make sure index is always correctly assigned
-            int index = (int) Math.floor(lower.getY() - bottommost);
+            int index = (int) (lower.getY() - bottommost);
 
             // watch out for division by zero
-            double inversem = (upper.getX() - lower.getX())
+            double m_inverse = (upper.getX() - lower.getX())
                     / (upper.getY() - lower.getY());//dx/dy
 
-            edgeTable[index].add(new ActiveEdge(upper.getY(), lower.getX(), inversem));
+            edgeTable[index].add(new ActiveEdge(upper.getY(), lower.getX(), m_inverse));
         }
 
         LinkedList<ActiveEdge> activeEdges = new LinkedList<>();
@@ -129,23 +131,24 @@ public class Polygon implements Drawable {
             }
 
             // sorted, now draw!
-            boolean beginDrawing = false;
+            boolean seekingPair = false;
             ActiveEdge lastEdge = null;
 
             for (ActiveEdge edge : activeEdges) {
-                if (beginDrawing) {
+                if (seekingPair) {
                     if (Double.isInfinite(lastEdge.x)) {
                         return;
                     }
-                    for (int j = (int) Math.floor(lastEdge.x) - intLeftmost,
-                            max = (int) Math.floor(edge.x) - intLeftmost; j < max; j++) {
-                        pixels[i * width + j]
-                                = texture.getPixel(i, j, model.getLights());
+                    for (int j = (int) (lastEdge.x) - intLeftmost,
+                            max = (int) (edge.x) - intLeftmost;
+                            j < max;
+                            j++) {
+                        pixels[i * width + j] = texture.getPixel(i, j, model.getLights());
                     }
-                    beginDrawing = false;
+                    seekingPair = false;
                 } else {
                     lastEdge = edge;
-                    beginDrawing = true;
+                    seekingPair = true;
                 }
             }
 

@@ -5,8 +5,6 @@
  */
 package gk1;
 
-import gk1.Segment;
-
 /**
  *
  * @author Kazimierz
@@ -83,6 +81,10 @@ public class Vertex {
 
     public void setZ(double z) {
         this.z = z;
+    }
+
+    public Vertex castToInt2d() {
+        return new Vertex(Math.round(x), Math.round(y), z);
     }
 
     public Segment getBeginningOfSegment() {
