@@ -5,9 +5,13 @@
  */
 package gk1;
 
+import gk1.areas.Area;
+import gk1.textures.Texture;
+import java.awt.image.BufferedImage;
 import static java.lang.Math.sqrt;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import javafx.event.ActionEvent;
 import javafx.scene.Cursor;
 import javafx.scene.control.Menu;
@@ -50,20 +54,108 @@ public class Polygon implements Drawable {
         return true;
     }
 
-    public enum ActionState {
+    private void drawTexture(Viewer viewer) {
+        double leftmost = vertices.get(0).getX();
+        double topmost = vertices.get(0).getY();
+        double rightmost = leftmost;
+        double bottommost = topmost;
+        double x, y;
 
+        for (int i = 1, max = vertices.size(); i < max; i++) {
+            x = vertices.get(i).getX();
+            y = vertices.get(i).getY();
+
+            if (x < leftmost) {
+                leftmost = x;
+            } else if (x > rightmost) {
+                rightmost = x;
+            }
+
+            if (y > topmost) {
+                topmost = y;
+            } else if (y < bottommost) {
+                bottommost = y;
+            }
+        }
+
+        int intLeftmost = (int) Math.floor(leftmost);
+        int intBottommost = (int) Math.floor(bottommost);
+        int width = (int) Math.ceil(rightmost - leftmost);
+        int height = (int) Math.ceil(topmost - bottommost);
+        BufferedImage generatedTexture = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        // bucketsort edges
+        LinkedList<ActiveEdge>[] edgeTable = new LinkedList[height];
+        for (int i = 0; i < height; i++) {
+            edgeTable[i] = new LinkedList<>();
+        }
+        Vertex lower, upper, tmp;
+        for (int i = 0, max = segments.size(); i < max; i++) {
+            lower = segments.get(i).getBeginning();
+            upper = segments.get(i).getEnd();
+            if (lower.getY() > upper.getY()) {
+                tmp = lower;
+                lower = upper;
+                upper = tmp;
+            }
+            // lower.y <= upper.y
+
+            // make sure index is always correctly assigned
+            int index = (int) Math.floor(lower.getY());
+
+            // watch out for division by zero
+            double inversem = (upper.getX() - lower.getX())
+                    / (upper.getY() - lower.getY());//dx/dy
+
+            edgeTable[index].add(new ActiveEdge(upper.getY(), lower.getX(), inversem));
+        }
+
+        LinkedList<ActiveEdge> activeEdges = new LinkedList<>();
+        // fill a bufferedimage with pixels using the texture field
+        for (int i = 0, max = edgeTable.length; i < max; i++) {
+            if (edgeTable[i].size() % 2 == 1) {
+                // cannot draw! since line has to intersect only even number
+                return;
+            }
+            if (!edgeTable[i].isEmpty()) {
+                // nothing to be added here
+                activeEdges.addAll(edgeTable[i]);
+                activeEdges.sort((edge1, edge2) -> Double.compare(edge1.x, edge2.x));
+            }
+
+            // sorted, now draw!
+            //TODOTODOTODOTODO
+            // increment and remove!
+            LinkedList<ActiveEdge> toDelete = new LinkedList<>();
+
+            for (ActiveEdge edge : activeEdges) {
+                if (edge.ymax >= i + intBottommost) {
+                    toDelete.add(edge);
+                    continue;
+                }
+
+                edge.x += edge.minverse;
+            }
+
+            activeEdges.removeAll(toDelete);
+        }
+
+        // paint the image
+        viewer.drawImage(generatedTexture, intLeftmost, intBottommost, width, height);
+    }
+
+    public enum ActionState {
         moving,
         idle
     }
 
     private enum MoveEntity {
-
         movingVertex,
         movingSegment,
         movingPolygon,
         none
     }
 
+    private Texture texture = new Texture();
     private Boolean automaticRelations;
     private MoveEntity moveEntity;
     private Polygon backup;
@@ -79,11 +171,7 @@ public class Polygon implements Drawable {
     private String name;
     private double z;
 
-    public Polygon(String name, double z, Boolean automaticRelations, Vertex... vertices) {
-        this(name, z, automaticRelations, new ArrayList<>(Arrays.asList(vertices)));
-    }
-
-    public Polygon(String name, double z, Boolean automaticRelations, ArrayList<Vertex> vertices) {
+    public Polygon(String name, double z, Boolean automaticRelations, Collection<Vertex> vertices) {
         if (vertices.size() < 3) {
             //throw new Exception("A polygon has to have at least three vertices.");
             return;
@@ -118,6 +206,8 @@ public class Polygon implements Drawable {
         vertices.forEach((vertex) -> {
             viewer.draw(vertex);
         });
+
+        drawTexture(viewer);
     }
 
     private void makeBackupOfPolygon() {

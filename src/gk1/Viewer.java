@@ -259,7 +259,11 @@ public class Viewer {
         return image;
     }
 
-    private void drawImage() {
+    public void drawImage(BufferedImage image, double x, double y, double width, double height) {
+        graphicsContext.drawImage(SwingFXUtils.toFXImage(image, null), x, y, width, height);
+    }
+
+    private void drawImageEXPERIMENTAL() {
         // performance: https://stackoverflow.com/questions/6524196/java-get-pixel-array-from-image
         //more: https://gamedev.stackexchange.com/questions/82909/how-do-i-rotate-and-flip-2d-sprites-stored-in-a-1d-array-of-pixels
         //
@@ -275,11 +279,6 @@ public class Viewer {
         IntStream.range(0, totalSize).parallel().forEach(i -> {
             db.setElem(i, 0xaaffffff);
         });
-//        for (int i = 0; i < width; i++) {
-//            for (int j = 0; j < height; j++) {
-//                db.setElem(i * (ih) + j, 0xaaffffff);
-//            }
-//        }
         graphicsContext.drawImage(SwingFXUtils.toFXImage(bi, null), 0, 0, width, height);
     }
 

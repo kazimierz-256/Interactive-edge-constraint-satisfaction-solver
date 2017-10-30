@@ -5,6 +5,8 @@
  */
 package gk1;
 
+import gk1.Segment;
+
 /**
  *
  * @author Kazimierz

@@ -6,6 +6,7 @@
 package gk1;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import javafx.event.ActionEvent;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Menu;
@@ -73,11 +74,15 @@ public class Model implements Drawable {
                 if (result == null || result.isEmpty()) {
                     result = "George";
                 }
-                Polygon newPolygon = new Polygon(result, getNextZ(),
+                Polygon newPolygon = new Polygon(
+                        result,
+                        getNextZ(),
                         ((CheckBox) GK1.accessScene.lookup("#automaticRelations")).isSelected(),
-                        new Vertex(x, y, true),
-                        new Vertex(x + 200, y),
-                        new Vertex(x, y + 200));
+                        Arrays.asList(
+                                new Vertex(x, y, true),
+                                new Vertex(x + 200, y),
+                                new Vertex(x, y + 200))
+                );
                 registerDrawable(newPolygon);
                 GK1.model.draw(GK1.viewer);
             });
