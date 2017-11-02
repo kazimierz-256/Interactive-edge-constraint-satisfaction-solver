@@ -6,8 +6,8 @@
 package gk1.textures;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import javax.imageio.ImageIO;
 
 /**
@@ -29,7 +29,7 @@ public class CachedImage {
 
         BufferedImage temporaryImage = null;
         try {
-            temporaryImage = ImageIO.read(new File(filesrc));
+            temporaryImage = ImageIO.read(new URL(filesrc));
         } catch (IOException e) {
         }
         image = temporaryImage;
@@ -38,17 +38,18 @@ public class CachedImage {
 
     public CachedImage(int colour) {
         image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-        image.getData().getDataBuffer().setElem(0, colour);
+        System.out.println(colour);
+        image.getRaster().getDataBuffer().setElem(0, colour);
         method = fillMethod.repeat;
     }
 
     public int getPixel(int x, int y) {
         switch (method) {
             case repeat:
-                int element = (x % image.getWidth()) * image.getHeight()
-                        + (y % image.getHeight());
-                return image.getData().getDataBuffer().getElem(element);
+//                    return image.getRaster().getDataBuffer().getElem(element);
+                return image.getRGB(x % image.getWidth(), y % image.getHeight());
+            default:
+                return 0;
         }
-        return 0;
     }
 }

@@ -6,7 +6,8 @@
 package gk1.textures;
 
 import gk1.LightSource;
-import java.util.Collection;
+import gk1.Vector;
+import java.util.ArrayList;
 
 /**
  *
@@ -19,12 +20,22 @@ public class Texture {
     private CachedImage heights;
 
     public Texture() {
-//        texture = new CachedImage("gk1/texture.jpg");
-//        normals = new CachedImage("gk1/normals.jpg");
-//        heights = new CachedImage("gk1/highlights.jpg");
-        texture = new CachedImage(0);
-        normals = new CachedImage(0x123456);
-        heights = new CachedImage(0xac45e7f);
+// pizza https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Pepperoni_pizza.jpg/320px-Pepperoni_pizza.jpg
+//https://upload.wikimedia.org/wikipedia/commons/4/43/Radiosity-yes.jpg
+//https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Painters_problem.svg/340px-Painters_problem.svg.png
+        // pizzas
+        texture = new CachedImage(
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Pepperoni_pizza.jpg/320px-Pepperoni_pizza.jpg"
+        );
+        //https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Normal_map_example_-_Map.png/600px-Normal_map_example_-_Map.png
+        // abstract shapes
+        normals = new CachedImage(
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Normal_map_example_-_Map.png/600px-Normal_map_example_-_Map.png"
+        );
+        // earth
+        heights = new CachedImage(
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Srtm_ramp2.world.21600x10800.jpg/800px-Srtm_ramp2.world.21600x10800.jpg"
+        );
     }
 
     public Texture(CachedImage texture, CachedImage normals, CachedImage heights) {
@@ -33,8 +44,31 @@ public class Texture {
         this.heights = heights;
     }
 
-    public int getPixel(int x, int y, Collection<LightSource> lights) {
-        return 0xaaffffff;
+    public int getPixel(double leftmost, double bottommost, double z, int x, int y, ArrayList<LightSource> lights) {
+        // lambert algorithm
+        int texturePixel = texture.getPixel(x, y);
+        int normalPixel = normals.getPixel(x, y);
+        int heightPixel = heights.getPixel(x, y);
+
+        Vector N = new Vector(0, 0, 0); // from normal map
+        N.normalizeZ();
+
+        Vector D = new Vector(0, 0, 0);// from height map?
+
+        Vector L = Vector.fromVertex(lights.get(0).getPosition());
+        L.minus(new Vector(leftmost + x, bottommost + y, z));
+
+        // update normal vector
+        N.add(D);
+
+        double dotProduct = N.dotProductNormalized(L);
+
+        if (dotProduct < 0) {
+            return texturePixel;
+        } else {
+            return 0;
+        }
+
     }
 
     public CachedImage getTexture() {
