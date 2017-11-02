@@ -7,7 +7,6 @@ package gk1;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import javafx.event.ActionEvent;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Menu;
@@ -21,28 +20,23 @@ import javafx.scene.input.MouseEvent;
  */
 public class Model {
 
-    private ArrayList<Drawable> drawables = new ArrayList<>();
+    private ArrayList<Polygon> polygons = new ArrayList<>();
     private double zCounter = 0;
-    private Collection<LightSource> lights;
+    private ArrayList<LightSource> lights = new ArrayList<>();
+    //private Drawable activeDrawable;
 
     public double getNextZ() {
         return zCounter++;
     }
 
-    //private Drawable activeDrawable;
-    public void registerDrawable(Drawable drawable) {
-        drawables.add(drawable);
-    }
-
-    public void unregisterDrawable(Drawable drawable) {
-        drawables.remove(drawable);
-    }
-
     public void draw(Viewer viewer) {
 
-        // draw each subdrawable
-        drawables.forEach((drawable) -> {
-            drawable.draw(viewer, this);
+        polygons.forEach((polygon) -> {
+            polygon.draw(viewer, this);
+        });
+
+        lights.forEach((light) -> {
+            light.draw(viewer, this);
         });
     }
 
@@ -51,7 +45,7 @@ public class Model {
 
         ArrayList<MenuItem> mainMenuItems = new ArrayList<>();
 
-        drawables.forEach((drawable) -> {
+        polygons.forEach((drawable) -> {
             ArrayList<MenuItem> subMenuItems = drawable.buildContextMenu(event);
             if (subMenuItems.size() > 0) {
                 Menu subMenu = new Menu(drawable.toString());
@@ -76,14 +70,13 @@ public class Model {
                 }
                 Polygon newPolygon = new Polygon(
                         result,
-                        getNextZ(),
                         ((CheckBox) GK1.accessScene.lookup("#automaticRelations")).isSelected(),
                         Arrays.asList(
                                 new Vertex(x, y, true),
                                 new Vertex(x + 200, y + 50),
                                 new Vertex(x + 50, y + 200))
                 );
-                registerDrawable(newPolygon);
+                registerPolygon(newPolygon);
                 GK1.model.draw(GK1.viewer);
             });
             mainMenuItems.add(menuItem);
@@ -94,7 +87,7 @@ public class Model {
 
     public Reaction mouseMoved(MouseEvent mouseEvent) {
         Reaction mergedReaction = new Reaction();
-        drawables.forEach((drawable) -> {
+        polygons.forEach((drawable) -> {
             mergedReaction.Merge(drawable.mouseMoved(mouseEvent));
         });
         return mergedReaction;
@@ -102,7 +95,7 @@ public class Model {
 
     public Reaction mousePressed(MouseEvent mouseEvent) {
         Reaction mergedReaction = new Reaction();
-        drawables.forEach((drawable) -> {
+        polygons.forEach((drawable) -> {
             mergedReaction.Merge(drawable.mousePressed(mouseEvent));
         });
         return mergedReaction;
@@ -110,7 +103,7 @@ public class Model {
 
     public Reaction mouseReleased(MouseEvent mouseEvent) {
         Reaction mergedReaction = new Reaction();
-        drawables.forEach((drawable) -> {
+        polygons.forEach((drawable) -> {
             mergedReaction.Merge(drawable.mouseReleased(mouseEvent));
         });
         return mergedReaction;
@@ -118,18 +111,30 @@ public class Model {
 
     public Reaction toggleAutomaticRelations(Boolean isAutomatic) {
         Reaction mergedReaction = new Reaction();
-        drawables.forEach((drawable) -> {
+        polygons.forEach((drawable) -> {
             mergedReaction.Merge(drawable.toggleAutomaticRelations(isAutomatic));
         });
         return mergedReaction;
     }
 
-    public Collection<LightSource> getLights() {
-        return lights;
+    public void registerPolygon(Polygon polygon) {
+        polygons.add(polygon);
     }
 
-    public void setLights(Collection<LightSource> lights) {
-        this.lights = lights;
+    public void unregisterPolygon(Polygon polygon) {
+        polygons.remove(polygon);
+    }
+
+    public void registerLight(LightSource light) {
+        lights.add(light);
+    }
+
+    public void unregisterLight(LightSource light) {
+        lights.remove(light);
+    }
+
+    public ArrayList<LightSource> getLights() {
+        return lights;
     }
 
 }

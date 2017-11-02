@@ -268,16 +268,6 @@ public class Viewer {
 ////            canvasImage = new BufferedImage(
 ////                getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
 ////            canvasPixels = PixelImages.getPixels(canvasImage);
-//        BufferedImage bi = new BufferedImage((int) width, (int) height, BufferedImage.TYPE_INT_ARGB);
-//
-//        int totalSize = (int) (width * height);
-//        int[] iArray = new int[totalSize];
-//        int ih = (int) height;
-//        DataBuffer db = bi.getRaster().getDataBuffer();
-//        IntStream.range(0, totalSize).parallel().forEach(i -> {
-//            db.setElem(i, 0xaaffffff);
-//        });
-//        graphicsContext.drawImage(SwingFXUtils.toFXImage(bi, null), 0, 0, width, height);
 //    }
     public void clear() {
         graphicsContext.clearRect(0, 0, width, height);
@@ -297,15 +287,22 @@ public class Viewer {
         drawModel(lastDrawnModel);
     }
 
+    private boolean isDrawing = false;
+
     void drawModel(Model model) {
+        if (isDrawing) {
+            return;
+        }
+        isDrawing = true;
+        clear();
         lastDrawnModel = model;
         long startTime = System.nanoTime();
-        clear();
         GK1.model.draw(GK1.viewer);
+        isDrawing = false;
         double elapsedTimeSeconds
                 = (double) ((System.nanoTime() - startTime)) / 1000_000_000d;
         double fps = 1 / elapsedTimeSeconds;
-//        System.out.println(String.format("%g fps", fps));
+        graphicsContext.strokeText(String.format("%3.2f fps", fps), 10, 50);
     }
 
 }

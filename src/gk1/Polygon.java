@@ -11,7 +11,6 @@ import gk1.textures.Texture;
 import java.awt.image.BufferedImage;
 import static java.lang.Math.sqrt;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import javafx.event.ActionEvent;
@@ -26,155 +25,6 @@ import javafx.scene.input.MouseEvent;
  * @author Kazimierz
  */
 public class Polygon implements Drawable {
-
-    @Override
-    public double getZ() {
-        return z;
-    }
-
-    @Override
-    public Reaction toggleAutomaticRelations(Boolean isAutomatic) {
-        automaticRelations = isAutomatic;
-        return new Reaction(true, false, null);
-    }
-
-    private boolean trySnapEdges() {
-        Segment segment;
-        for (int i = 0, max = segments.size(); i < max; i++) {
-            segment = segments.get(i);
-            if (segment.getConstraint() == Segment.segmentConstraint.free) {
-                // todo: only if surrounding segments are not extreme
-                if (segment.isAlmostHorizontal()
-                        && segment.isSafeToRestrictHorizontal()) {
-                    segment.restrictHorizontal();
-                } else if (segment.isAlmostVertical()
-                        && segment.isSafeToRestrictVertical()) {
-                    segment.restrictVertical();
-                }
-            }
-        }
-        return true;
-    }
-
-    private void drawTexture(Viewer viewer, Model context) {
-        double leftmost = vertices.get(0).getX();
-        double topmost = vertices.get(0).getY();
-        double rightmost = leftmost;
-        double bottommost = topmost;
-        double x, y;
-
-        Vertex lower, upper, tmp;
-        for (int i = 1, max = vertices.size(); i < max; i++) {
-            tmp = vertices.get(i).castToInt2d();
-            x = tmp.getX();
-            y = tmp.getY();
-
-            if (x < leftmost) {
-                leftmost = x;
-            } else if (x > rightmost) {
-                rightmost = x;
-            }
-
-            if (y > topmost) {
-                topmost = y;
-            } else if (y < bottommost) {
-                bottommost = y;
-            }
-        }
-
-        int intLeftmost = (int) (leftmost);
-        int intBottommost = (int) (bottommost);
-        int width = (int) (rightmost - leftmost);
-        int height = (int) (topmost - bottommost);
-        int[] pixels = new int[width * height];
-        Arrays.fill(pixels, 0xccffaabb);
-        // bucketsort edges
-        LinkedList<ActiveEdge>[] edgeTable = new LinkedList[height];
-        for (int i = 0; i < height; i++) {
-            edgeTable[i] = new LinkedList<>();
-        }
-
-        for (int i = 0, max = segments.size(); i < max; i++) {
-            lower = segments.get(i).getBeginning();
-            upper = segments.get(i).getEnd();
-            if (lower.getY() > upper.getY()) {
-                tmp = lower;
-                lower = upper;
-                upper = tmp;
-            }
-            // now the following is true: lower.y <= upper.y
-
-            // make sure index is always correctly assigned
-            int index = (int) (lower.getY() - bottommost);
-
-            // watch out for division by zero
-            double m_inverse = (upper.getX() - lower.getX())
-                    / (upper.getY() - lower.getY());//dx/dy
-
-            edgeTable[index].add(new ActiveEdge(upper.getY(), lower.getX(), m_inverse));
-        }
-
-        LinkedList<ActiveEdge> activeEdges = new LinkedList<>();
-
-        // fill a bufferedimage with pixels using the texture field
-        for (int i = 0; i < height; i++) {
-//            if (edgeTable[i].size() % 2 == 1) {
-//                // cannot draw! since line has to intersect only even number
-//                System.out.println("oh noes only one vertex");
-//                return;
-//            }
-            if (!edgeTable[i].isEmpty()) {
-                //https://docs.oracle.com/javase/7/docs/api/java/util/LinkedList.html#fields_inherited_from_class_java.util.AbstractList
-                // constant time
-                activeEdges.addAll(edgeTable[i]);
-                activeEdges.sort((edge1, edge2) -> Double.compare(edge1.x, edge2.x));
-            }
-
-            // sorted, now draw!
-            boolean seekingPair = false;
-            ActiveEdge lastEdge = null;
-
-            for (ActiveEdge edge : activeEdges) {
-                if (seekingPair) {
-                    if (Double.isInfinite(lastEdge.x)) {
-                        return;
-                    }
-                    for (int j = (int) (lastEdge.x) - intLeftmost,
-                            max = (int) (edge.x) - intLeftmost;
-                            j < max;
-                            j++) {
-                        pixels[i * width + j] = texture.getPixel(i, j, model.getLights());
-                    }
-                    seekingPair = false;
-                } else {
-                    lastEdge = edge;
-                    seekingPair = true;
-                }
-            }
-
-            // increment x coordinates and remove edges below the scanline!
-            LinkedList<ActiveEdge> toDelete = new LinkedList<>();
-
-            for (ActiveEdge edge : activeEdges) {
-                if ((int) edge.y_max <= i + intBottommost) {
-                    toDelete.add(edge);
-                    continue;
-                }
-
-                edge.x += edge.m_inverse;
-            }
-
-            if (!toDelete.isEmpty()) {
-                activeEdges.removeAll(toDelete);
-            }
-
-        }
-
-        BufferedImage generatedTexture = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        generatedTexture.getRaster().setDataElements(0, 0, width, height, pixels);
-        // paint the image
-        viewer.drawImage(generatedTexture, intLeftmost, intBottommost, width, height);
-    }
 
     public enum ActionState {
         moving,
@@ -202,9 +52,160 @@ public class Polygon implements Drawable {
     private ArrayList<Vertex> vertices;
     private ArrayList<Segment> segments;
     private String name;
-    private double z;
 
-    public Polygon(String name, double z, Boolean automaticRelations, Collection<Vertex> vertices) {
+    @Override
+    public double getZ() {
+        return vertices.get(0).getZ();
+    }
+
+    @Override
+    public Reaction toggleAutomaticRelations(Boolean isAutomatic) {
+        automaticRelations = isAutomatic;
+        return new Reaction(true, false, null);
+    }
+
+    private boolean trySnapEdges() {
+        Segment segment;
+        for (int i = 0, max = segments.size(); i < max; i++) {
+            segment = segments.get(i);
+            if (segment.getConstraint() == Segment.segmentConstraint.free) {
+                // todo: only if surrounding segments are not extreme
+                if (segment.isAlmostHorizontal()
+                        && segment.isSafeToRestrictHorizontal()) {
+                    segment.restrictHorizontal();
+                } else if (segment.isAlmostVertical()
+                        && segment.isSafeToRestrictVertical()) {
+                    segment.restrictVertical();
+                }
+            }
+        }
+        return true;
+    }
+
+    private void drawTexture(Viewer viewer, Model context) {
+        // start already with the first vertex
+        double leftmost = vertices.get(0).getXint();
+        double topmost = vertices.get(0).getYint();
+        double rightmost = leftmost;
+        double bottommost = topmost;
+        double x, y;
+
+        Vertex lower, upper, tmp;
+        for (int i = 1, max = vertices.size(); i < max; i++) {
+            tmp = vertices.get(i);
+            x = tmp.getXint();
+            y = tmp.getYint();
+
+            if (x < leftmost) {
+                leftmost = x;
+            } else if (x > rightmost) {
+                rightmost = x;
+            }
+
+            if (y > topmost) {
+                topmost = y;
+            } else if (y < bottommost) {
+                bottommost = y;
+            }
+        }
+
+        int width = (int) (rightmost - leftmost);
+        int height = (int) (topmost - bottommost);
+
+        if (width <= 0 || height <= 0) {
+            return;
+        }
+
+        int[] pixels = new int[width * height];
+
+        // bucketsort edges
+        LinkedList<ActiveEdge>[] edgeTable = new LinkedList[height + 1];
+        // initialize the array
+        for (int i = 0; i < edgeTable.length; i++) {
+            edgeTable[i] = new LinkedList<>();
+        }
+
+        for (int i = 0, max = segments.size(); i < max; i++) {
+            lower = segments.get(i).getBeginning();
+            upper = segments.get(i).getEnd();
+            if (lower.getY() > upper.getY()) {
+                tmp = lower;
+                lower = upper;
+                upper = tmp;
+            }
+            // now the following is true: lower.y <= upper.y
+
+            // make sure the index is always correctly assigned
+            int indexAboveBottommost = (int) (lower.getYint() - bottommost);
+            // watch out for division by zero
+            //dx/dy
+            double m_inverse = ((double) (upper.getXint() - lower.getXint()))
+                    / (upper.getYint() - lower.getYint());
+
+            edgeTable[indexAboveBottommost].add(
+                    new ActiveEdge(upper.getYint(), lower.getXint(), m_inverse));
+        }
+
+        LinkedList<ActiveEdge> activeEdges = new LinkedList<>();
+
+        // fill a bufferedimage with pixels using the texture field
+        for (int localHeight = 0; localHeight < height; localHeight++) {
+            if (!edgeTable[localHeight].isEmpty()) {
+                //https://docs.oracle.com/javase/7/docs/api/java/util/LinkedList.html#fields_inherited_from_class_java.util.AbstractList
+                // constant time insertion
+                activeEdges.addAll(edgeTable[localHeight]);
+            }
+            activeEdges.sort((edge1, edge2) -> Double.compare(edge1.x, edge2.x));
+
+            // sorted, now paint!
+            boolean seekingPair = false;
+            ActiveEdge previousEdge = null;
+
+            for (ActiveEdge edge : activeEdges) {
+                if (seekingPair) {
+                    if (Double.isInfinite(edge.x)) {
+                        return;
+                    }
+
+                    // paint all the way from previous to current edge
+                    for (int j = (int) (previousEdge.x - leftmost),
+                            max = (int) (edge.x - leftmost);
+                            j < max;
+                            j++) {
+
+                        pixels[localHeight * width + j] = texture.getPixel(leftmost, bottommost, getZ(), j, localHeight, model.getLights());
+                    }
+
+                    seekingPair = false;
+                } else {
+                    previousEdge = edge;
+                    seekingPair = true;
+                }
+            }
+
+            // increment x coordinates and remove edges below the scanline!
+            LinkedList<ActiveEdge> toSpare = new LinkedList<>();
+
+            for (ActiveEdge edge : activeEdges) {
+                if (edge.y_max > 1 + localHeight + bottommost) {
+                    edge.x += edge.m_inverse;
+                    toSpare.add(edge);
+                }
+
+            }
+
+            activeEdges = toSpare;
+
+        }
+
+        BufferedImage generatedTexture = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        generatedTexture.getRaster().setDataElements(0, 0, width, height, pixels);
+
+        // finally paint the image
+        viewer.drawImage(generatedTexture, leftmost, bottommost, width, height);
+    }
+
+    public Polygon(String name, Boolean automaticRelations, Collection<Vertex> vertices) {
         if (vertices.size() < 3) {
             //throw new Exception("A polygon has to have at least three vertices.");
             return;
@@ -212,11 +213,11 @@ public class Polygon implements Drawable {
         this.name = name;
         this.vertices = new ArrayList<>();
         this.segments = new ArrayList<>();
-        this.z = z;
         this.automaticRelations = automaticRelations;
 
         vertices.forEach((vertex) -> {
-            this.vertices.add(vertex.cloneWithoutSegments());
+            Vertex cloned = vertex.cloneWithoutSegments();
+            this.vertices.add(cloned);
         });
 
         int max = this.vertices.size();
@@ -233,20 +234,22 @@ public class Polygon implements Drawable {
 
     @Override
     public void draw(Viewer viewer, Model context) {
+        drawTexture(viewer, model);
+
         segments.forEach((segment) -> {
             viewer.draw(segment, automaticRelations);
         });
+
         vertices.forEach((vertex) -> {
             viewer.draw(vertex);
         });
 
-        drawTexture(viewer, model);
     }
 
     private void makeBackupOfPolygon() {
         // be careful, line restrictions are not copied over
         // created lines will become loose!
-        backup = new Polygon(name, z, automaticRelations, vertices);
+        backup = new Polygon(name, automaticRelations, vertices);
     }
 
     @Override
@@ -372,7 +375,6 @@ public class Polygon implements Drawable {
     }
 
     @Override
-
     public ArrayList<MenuItem> buildContextMenu(MouseEvent event) {
         ArrayList<MenuItem> menuItems = new ArrayList<>();
 
@@ -391,7 +393,8 @@ public class Polygon implements Drawable {
             menu.getItems().add(menuItem);
 
             // horizontal segment
-            if (segment.isSafeToRestrictHorizontal()) {
+            if (segment.getConstraint() != Segment.segmentConstraint.horizontal
+                    && segment.isSafeToRestrictHorizontal()) {
                 menuItem = new MenuItem("Make horizontal if possible");
                 menuItem.setOnAction((ActionEvent e) -> {
                     if (tryHorizontal(segment)) {
@@ -402,7 +405,8 @@ public class Polygon implements Drawable {
             }
 
             // vertical segment
-            if (segment.isSafeToRestrictVertical()) {
+            if (segment.getConstraint() != Segment.segmentConstraint.vertical
+                    && segment.isSafeToRestrictVertical()) {
                 menuItem = new MenuItem("Make vertical if possible");
                 menuItem.setOnAction((ActionEvent e) -> {
                     if (tryVertical(segment)) {
@@ -419,6 +423,7 @@ public class Polygon implements Drawable {
                     GK1.viewer.drawLastModel();
                 }
             });
+
             menu.getItems().add(menuItem);
             if (segment.getConstraint() != Segment.segmentConstraint.free) {
 
@@ -465,7 +470,7 @@ public class Polygon implements Drawable {
         if (!menuItems.isEmpty() || isInsidePolygon(position)) {
             MenuItem menuItem = new MenuItem("Remove polygon");
             menuItem.setOnAction((ActionEvent e) -> {
-                GK1.model.unregisterDrawable(this);
+                GK1.model.unregisterPolygon(this);
                 GK1.viewer.drawLastModel();
             });
             menuItems.add(menuItem);

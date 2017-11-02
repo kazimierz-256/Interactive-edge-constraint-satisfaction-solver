@@ -7,6 +7,7 @@ package gk1;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
@@ -96,7 +97,21 @@ public class FXMLDocumentController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
+        Polygon newPolygon = new Polygon(
+                "Default",
+                false,
+                Arrays.asList(
+                        new Vertex(100, 100, true),
+                        new Vertex(300, 150),
+                        new Vertex(150, 300))
+        );
+
+        Vertex position = new Vertex(200, 200, 10);
+        LightSource light = new LightSource(position, 0xffaaffaa);
+
         GK1.model = new Model();
+        GK1.model.registerPolygon(newPolygon);
+        GK1.model.registerLight(light);
         GK1.viewer = new Viewer(drawing, 600, 600);
         GK1.viewer.drawModel(GK1.model);
     }

@@ -55,12 +55,20 @@ public class Vertex {
         return x;
     }
 
+    public int getXint() {
+        return (int) Math.round(x);
+    }
+
     public void setX(double x) {
         this.x = x;
     }
 
     public double getY() {
         return y;
+    }
+
+    public int getYint() {
+        return (int) Math.round(y);
     }
 
     public void setY(double y) {
@@ -81,10 +89,6 @@ public class Vertex {
 
     public void setZ(double z) {
         this.z = z;
-    }
-
-    public Vertex castToInt2d() {
-        return new Vertex(Math.round(x), Math.round(y), z);
     }
 
     public Segment getBeginningOfSegment() {
