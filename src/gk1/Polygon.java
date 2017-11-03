@@ -26,12 +26,16 @@ import javafx.scene.input.MouseEvent;
  */
 public class Polygon implements Drawable {
 
+    private Vertex rememberedMovedFirst;
+
     public enum ActionState {
+
         moving,
         idle
     }
 
     private enum MoveEntity {
+
         movingVertex,
         movingSegment,
         movingPolygon,
@@ -41,7 +45,7 @@ public class Polygon implements Drawable {
     private Texture texture = new Texture();
     private Boolean automaticRelations;
     private MoveEntity moveEntity;
-    private Polygon backup;
+//    private Polygon backup;
     private Vertex moveVertex;
     private Segment moveSegment;
 
@@ -173,7 +177,8 @@ public class Polygon implements Drawable {
                             j < max;
                             j++) {
 
-                        pixels[localHeight * width + j] = texture.getPixel(leftmost, bottommost, getZ(), j, localHeight, model.getLights());
+                        pixels[localHeight * width + j] = texture.getPixel(
+                                leftmost, bottommost, getZ(), j, localHeight, model.getLights());
                     }
 
                     seekingPair = false;
@@ -187,6 +192,8 @@ public class Polygon implements Drawable {
             LinkedList<ActiveEdge> toSpare = new LinkedList<>();
 
             for (ActiveEdge edge : activeEdges) {
+                // jeśli edge.y_max <= 1 + localHeight + bottommost
+                // to należy usunąć
                 if (edge.y_max > 1 + localHeight + bottommost) {
                     edge.x += edge.m_inverse;
                     toSpare.add(edge);
@@ -246,12 +253,11 @@ public class Polygon implements Drawable {
 
     }
 
-    private void makeBackupOfPolygon() {
-        // be careful, line restrictions are not copied over
-        // created lines will become loose!
-        backup = new Polygon(name, automaticRelations, vertices);
-    }
-
+//    private void makeBackupOfPolygon() {
+//        // be careful, line restrictions are not copied over
+//        // created lines will become loose!
+//        backup = new Polygon(name, automaticRelations, vertices);
+//    }
     @Override
     public Reaction mouseMoved(MouseEvent mouseEvent) {
         Reaction reaction = new Reaction();
@@ -302,7 +308,8 @@ public class Polygon implements Drawable {
             moveEntity = MoveEntity.movingPolygon;
         }
         rememberedMouseClick = mouseEvent;
-        makeBackupOfPolygon();
+//        makeBackupOfPolygon();
+        rememberedMovedFirst = vertices.get(0).cloneWithoutSegments();
         this.state = ActionState.moving;
         return reaction;
     }
@@ -311,6 +318,7 @@ public class Polygon implements Drawable {
     public Reaction mouseReleased(MouseEvent mouseEvent) {
         Reaction reaction = new Reaction();
         this.state = ActionState.idle;
+
         // TODO: create a backup of polygon in case there is no possibility
         if (automaticRelations && moveVertex != null) {
             reaction.mergeShouldRender(
@@ -324,13 +332,18 @@ public class Polygon implements Drawable {
     }
 
     public boolean movePolygon(MouseEvent mouseEvent) {
+        double displacementX = rememberedMovedFirst.getX() - vertices.get(0).getX();
+        double displacementY = rememberedMovedFirst.getY() - vertices.get(0).getY();
+
         for (int i = 0, max = vertices.size(); i < max; i++) {
             vertices.get(i).setX(
-                    backup.vertices.get(i).getX()
-                    + mouseEvent.getX() - rememberedMouseClick.getX());
+                    displacementX + vertices.get(i).getX()
+                    + mouseEvent.getX() - rememberedMouseClick.getX()
+            );
             vertices.get(i).setY(
-                    backup.vertices.get(i).getY()
-                    + mouseEvent.getY() - rememberedMouseClick.getY());
+                    displacementY + vertices.get(i).getY()
+                    + mouseEvent.getY() - rememberedMouseClick.getY()
+            );
         }
         return true;
     }

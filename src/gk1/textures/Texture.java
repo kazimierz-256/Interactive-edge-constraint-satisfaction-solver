@@ -7,7 +7,9 @@ package gk1.textures;
 
 import gk1.LightSource;
 import gk1.Vector;
+import static java.lang.Math.floor;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  *
@@ -23,7 +25,7 @@ public class Texture {
 // pizza https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Pepperoni_pizza.jpg/320px-Pepperoni_pizza.jpg
 //https://upload.wikimedia.org/wikipedia/commons/4/43/Radiosity-yes.jpg
 //https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Painters_problem.svg/340px-Painters_problem.svg.png
-        // pizzas
+        // pizza
         texture = new CachedImage(
                 "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Pepperoni_pizza.jpg/320px-Pepperoni_pizza.jpg"
         );
@@ -45,29 +47,49 @@ public class Texture {
     }
 
     public int getPixel(double leftmost, double bottommost, double z, int x, int y, ArrayList<LightSource> lights) {
-        // lambert algorithm
+        // lambert reflectance
         int texturePixel = texture.getPixel(x, y);
         int normalPixel = normals.getPixel(x, y);
         int heightPixel = heights.getPixel(x, y);
 
-        Vector N = new Vector(0, 0, 0); // from normal map
+        Vector N = new Vector((ArgbHelper.getRed(normalPixel) - 127) / 127,
+                (ArgbHelper.getGreen(normalPixel) - 127) / 127,
+                ArgbHelper.getBlue(normalPixel) / 255); // from normal map
         N.normalizeZ();
 
-        Vector D = new Vector(0, 0, 0);// from height map?
-
-        Vector L = Vector.fromVertex(lights.get(0).getPosition());
-        L.minus(new Vector(leftmost + x, bottommost + y, z));
-
+//        Vector D = new Vector(0, 0, 0);// from height map?
         // update normal vector
-        N.add(D);
+//        N.add(D);
+        int resultingRed = 0;
+        int resultingGreen = 0;
+        int resultingBlue = 0;
 
-        double dotProduct = N.dotProductNormalized(L);
+        for (Iterator<LightSource> iterator = lights.iterator(); iterator.hasNext();) {
+            LightSource light = iterator.next();
+            int lightColour = light.getLightColour();
 
-        if (dotProduct < 0) {
-            return texturePixel;
-        } else {
-            return 0;
+            Vector L = Vector.fromVertex(light.getPosition());
+            L.minus(new Vector(leftmost + x, bottommost + y, z));
+            double dotProduct = 1;//N.dotProductNormalized(L);
+
+            if (dotProduct <= 0) {
+                continue;
+            }
+
+            resultingRed = normalizeTo255((dotProduct * ArgbHelper.getRed(lightColour))
+                    * ArgbHelper.getRed(texturePixel));
+            resultingGreen = normalizeTo255((dotProduct * ArgbHelper.getGreen(lightColour))
+                    * ArgbHelper.getGreen(texturePixel));
+            resultingBlue = normalizeTo255((dotProduct * ArgbHelper.getBlue(lightColour))
+                    * ArgbHelper.getBlue(texturePixel));
+
         }
+
+        int resultingPixel = 0xdd000000;
+        resultingPixel = ArgbHelper.setRed(resultingPixel, resultingRed);
+//        resultingPixel = ArgbHelper.setGreen(resultingPixel, resultingGreen);
+//        resultingPixel = ArgbHelper.setBlue(resultingPixel, resultingBlue);
+        return resultingPixel;
 
     }
 
@@ -93,5 +115,10 @@ public class Texture {
 
     public void setHeights(CachedImage heights) {
         this.heights = heights;
+    }
+
+    private int normalizeTo255(double color) {
+        color /= 255;
+        return color < 255 ? (int) floor(color) : 255;
     }
 }

@@ -106,8 +106,8 @@ public class FXMLDocumentController implements Initializable {
                         new Vertex(150, 300))
         );
 
-        Vertex position = new Vertex(200, 200, 10);
-        LightSource light = new LightSource(position, 0xffaaffaa);
+        Vertex position = new Vertex(200, 200, 100);
+        LightSource light = new LightSource(position, 0xff_ff_ff_ff);
 
         GK1.model = new Model();
         GK1.model.registerPolygon(newPolygon);
