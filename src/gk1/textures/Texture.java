@@ -74,8 +74,8 @@ public class Texture {
             int lightColour = light.getLightColour();
 
             Vector L = Vector.fromVertex(light.getPosition());
-            L.minus(new Vector(leftmost + x, bottommost + y, z));
-            double dotProduct = N.dotProductNormalized(L);
+            L.minus(new Vector(leftmost + x, bottommost + y, z + heightPixelBlueComponent * heightScale));
+            double dotProduct = N.dotProductNormalized(L) * 10 / Math.log(L.getSquareLength());
 
             if (dotProduct > 0) {
                 resultingRed += (dotProduct * ArgbHelper.getRed(lightColour)) * ArgbHelper.getRed(texturePixel);

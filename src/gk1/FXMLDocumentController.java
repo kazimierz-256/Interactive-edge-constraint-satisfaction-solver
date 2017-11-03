@@ -41,7 +41,7 @@ public class FXMLDocumentController implements Initializable {
     private void automaticToggle(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
         Reaction reaction = GK1.model.toggleAutomaticRelations(newValue);
         if (reaction.isShouldRender()) {
-            GK1.viewer.drawModel(GK1.model);
+//            GK1.viewer.drawModel(GK1.model);
         }
 
         if (reaction.isShouldChangeCursor()) {
@@ -55,7 +55,7 @@ public class FXMLDocumentController implements Initializable {
     private void mouseMoved(MouseEvent mouseEvent) {
         Reaction reaction = GK1.model.mouseMoved(mouseEvent);
         if (reaction.isShouldRender()) {
-            GK1.viewer.drawModel(GK1.model);
+//            GK1.viewer.drawModel(GK1.model);
         }
 
         if (reaction.isShouldChangeCursor()) {
@@ -80,7 +80,7 @@ public class FXMLDocumentController implements Initializable {
         } else {
             // just clicked!
             Reaction reaction = GK1.model.mousePressed(mouseEvent);
-            GK1.viewer.drawModel(GK1.model);
+//            GK1.viewer.drawModel(GK1.model);
 
         }
     }
@@ -89,7 +89,7 @@ public class FXMLDocumentController implements Initializable {
     private void mouseReleased(MouseEvent mouseEvent) {
         Reaction reaction = GK1.model.mouseReleased(mouseEvent);
         if (reaction.isShouldRender()) {
-            GK1.viewer.drawModel(GK1.model);
+//            GK1.viewer.drawModel(GK1.model);
         }
     }
 
@@ -107,18 +107,24 @@ public class FXMLDocumentController implements Initializable {
                 Arrays.asList(
                         new Vertex(100, 100, true),
                         new Vertex(400, 100),
-                        new Vertex(200, 400),
+                        new Vertex(600, 500),
                         new Vertex(100, 500))
         );
 
-        LightSource light = new LightSource(
+        LightSource light1 = new LightSource(
                 new Vertex(400, 300, 100),
-                0xff_ff_ff_ff
+                0xff_ff_ff_dd
+        );
+
+        LightSource light2 = new LightSource(
+                new Vertex(400, 300, 100),
+                0xff_ff_aa_33
         );
 
         GK1.model = new Model();
         GK1.model.registerPolygon(newPolygon);
-        GK1.model.registerLight(light);
+        GK1.model.registerLight(light1);
+        GK1.model.registerLight(light2);
         GK1.viewer = new Viewer(drawing, 600, 600);
 
         long startedTime = System.currentTimeMillis();
@@ -128,11 +134,18 @@ public class FXMLDocumentController implements Initializable {
 
                     // animate the light source
                     double t = (System.currentTimeMillis() - startedTime) / 10_000d;
-                    double radius = 100 + 200 * sin(t * log(t));
-                    double phase = t + sin(t * log(t)) * sqrt(t);
-                    double z = 110 + 100 * sin(10 * sin(t));
-                    light.setPosition(new Vertex(400 + radius * cos(phase),
-                            300 + radius * sin(phase), z));
+
+                    double radius = 100 + 200 * sin(t) + 100 * sin(2 * t);
+                    double phase = -t / 2 + sin(t) * sqrt(t);
+                    double z = 1010 + 1000 * sin(10 * sin(t));
+                    light1.setPosition(new Vertex(100 + radius * cos(phase),
+                            200 + radius * sin(phase), z));
+
+                    radius = 200 + 100 * sin(t) + 50 * sin(5 * t);
+                    phase = t - 2 * sin(t / 2) * sqrt(t);
+                    z = 110 + 100 * sin(30 * sin(t));
+                    light2.setPosition(new Vertex(200 + radius * cos(phase),
+                            100 + radius * sin(phase), z));
 
                     // draw the model
                     GK1.viewer.drawModel(GK1.model);
