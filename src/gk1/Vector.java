@@ -50,9 +50,16 @@ public class Vector {
         z -= vector.z;
     }
 
+    public void scale(double scale) {
+        x *= scale;
+        y *= scale;
+        z *= scale;
+    }
+
     public double dotProductNormalized(Vector vector) {
-        double productOfSquareLengths = getSquareLength() * vector.getSquareLength();
-        return (x * vector.x + y * vector.y + z * vector.z) / sqrt(productOfSquareLengths);
+        double productOfSquareLengths = this.getSquareLength() * vector.getSquareLength();
+        return (this.x * vector.x + this.y * vector.y + this.z * vector.z)
+                / sqrt(productOfSquareLengths);
     }
 
     public static Vector fromVertex(Vertex vertex) {

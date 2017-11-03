@@ -6,12 +6,12 @@
 package gk1;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 
 /**
  *
@@ -235,6 +235,19 @@ public class Viewer {
         }
     }
 
+    public void draw(LightSource light) {
+        double x = light.getPosition().getX();
+        double y = light.getPosition().getY();
+        double w, h;
+        w = h = light.getPosition().getZ() / 10;
+        Paint backup = graphicsContext.getFill();
+        graphicsContext.setFill(Color.WHITE);
+        graphicsContext.fillOval(x - w / 2, y - h / 2, w, h);
+        graphicsContext.setFill(Color.BLACK);
+        graphicsContext.strokeOval(x - w / 2, y - h / 2, w, h);
+        graphicsContext.setFill(backup);
+    }
+
     public void draw(Vertex vertex) {
         double x = vertex.getX();
         double y = vertex.getY();
@@ -250,13 +263,12 @@ public class Viewer {
         graphicsContext.strokeText(vertex.toString(), x, y - 10);
     }
 
-    public static BufferedImage getImageFromArray(int[] pixels, int width, int height) {
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        WritableRaster raster = (WritableRaster) image.getData();
-        raster.setPixels(0, 0, width, height, pixels);
-        return image;
-    }
-
+//    public static BufferedImage getImageFromArray(int[] pixels, int width, int height) {
+//        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+//        WritableRaster raster = (WritableRaster) image.getData();
+//        raster.setPixels(0, 0, width, height, pixels);
+//        return image;
+//    }
     public void drawImage(BufferedImage image, double x, double y, double width, double height) {
         graphicsContext.drawImage(SwingFXUtils.toFXImage(image, null), x, y, width, height);
     }
@@ -288,21 +300,32 @@ public class Viewer {
     }
 
     private boolean isDrawing = false;
+    private Object lock = new Object();
 
     void drawModel(Model model) {
         if (isDrawing) {
             return;
+        } else {
+            synchronized (lock) {
+                if (isDrawing) {
+                    return;
+                } else {
+                    isDrawing = true;
+                }
+            }
         }
-        isDrawing = true;
+
         clear();
         lastDrawnModel = model;
         long startTime = System.nanoTime();
         GK1.model.draw(GK1.viewer);
-        isDrawing = false;
+
         double elapsedTimeSeconds
                 = (double) ((System.nanoTime() - startTime)) / 1000_000_000d;
         double fps = 1 / elapsedTimeSeconds;
         graphicsContext.strokeText(String.format("%3.2f fps", fps), 10, 50);
+
+        isDrawing = false;
     }
 
 }

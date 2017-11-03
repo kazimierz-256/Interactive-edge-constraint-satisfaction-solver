@@ -9,7 +9,6 @@ import gk1.LightSource;
 import gk1.Vector;
 import static java.lang.Math.floor;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  *
@@ -27,7 +26,7 @@ public class Texture {
 //https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Painters_problem.svg/340px-Painters_problem.svg.png
         // pizza
         texture = new CachedImage(
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Pepperoni_pizza.jpg/320px-Pepperoni_pizza.jpg"
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Pepperoni_pizza.jpg/640px-Pepperoni_pizza.jpg"
         );
         //https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Normal_map_example_-_Map.png/600px-Normal_map_example_-_Map.png
         // abstract shapes
@@ -35,8 +34,10 @@ public class Texture {
                 "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Normal_map_example_-_Map.png/600px-Normal_map_example_-_Map.png"
         );
         // earth
+        // https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Srtm_ramp2.world.21600x10800.jpg/800px-Srtm_ramp2.world.21600x10800.jpg
+        // https://upload.wikimedia.org/wikipedia/commons/5/57/Heightmap.png
         heights = new CachedImage(
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Srtm_ramp2.world.21600x10800.jpg/800px-Srtm_ramp2.world.21600x10800.jpg"
+                "https://upload.wikimedia.org/wikipedia/commons/c/c3/Heightmap_of_Trencrom_Hill.png"
         );
     }
 
@@ -50,45 +51,43 @@ public class Texture {
         // lambert reflectance
         int texturePixel = texture.getPixel(x, y);
         int normalPixel = normals.getPixel(x, y);
-        int heightPixel = heights.getPixel(x, y);
+        int heightPixelBlueComponent = ArgbHelper.getBlue(heights.getPixel(x, y));
+        double heightScale = 1d / 64;
 
-        Vector N = new Vector((ArgbHelper.getRed(normalPixel) - 127) / 127,
-                (ArgbHelper.getGreen(normalPixel) - 127) / 127,
-                ArgbHelper.getBlue(normalPixel) / 255); // from normal map
-        N.normalizeZ();
+        // dont know why -y?
+        Vector N = new Vector((ArgbHelper.getRed(normalPixel) - 127) / 128d,
+                -(ArgbHelper.getGreen(normalPixel) - 127) / 128d,
+                ArgbHelper.getBlue(normalPixel) / 255d); // from normal map
 
-//        Vector D = new Vector(0, 0, 0);// from height map?
-        // update normal vector
-//        N.add(D);
-        int resultingRed = 0;
-        int resultingGreen = 0;
-        int resultingBlue = 0;
+        Vector T = new Vector(1, 0, -N.x);
+        T.scale((ArgbHelper.getBlue(heights.getPixel(x + 1, y)) - heightPixelBlueComponent) * heightScale);
+        Vector B = new Vector(0, 1, -N.y);
+        B.scale((ArgbHelper.getBlue(heights.getPixel(x, y + 1)) - heightPixelBlueComponent) * heightScale);
 
-        for (Iterator<LightSource> iterator = lights.iterator(); iterator.hasNext();) {
-            LightSource light = iterator.next();
+        N.add(T);
+        N.add(B);
+        double resultingRed = 0;
+        double resultingGreen = 0;
+        double resultingBlue = 0;
+
+        for (LightSource light : lights) {
             int lightColour = light.getLightColour();
 
             Vector L = Vector.fromVertex(light.getPosition());
             L.minus(new Vector(leftmost + x, bottommost + y, z));
-            double dotProduct = 1;//N.dotProductNormalized(L);
+            double dotProduct = N.dotProductNormalized(L);
 
-            if (dotProduct <= 0) {
-                continue;
+            if (dotProduct > 0) {
+                resultingRed += (dotProduct * ArgbHelper.getRed(lightColour)) * ArgbHelper.getRed(texturePixel);
+                resultingGreen += (dotProduct * ArgbHelper.getGreen(lightColour)) * ArgbHelper.getGreen(texturePixel);
+                resultingBlue += (dotProduct * ArgbHelper.getBlue(lightColour)) * ArgbHelper.getBlue(texturePixel);
             }
-
-            resultingRed = normalizeTo255((dotProduct * ArgbHelper.getRed(lightColour))
-                    * ArgbHelper.getRed(texturePixel));
-            resultingGreen = normalizeTo255((dotProduct * ArgbHelper.getGreen(lightColour))
-                    * ArgbHelper.getGreen(texturePixel));
-            resultingBlue = normalizeTo255((dotProduct * ArgbHelper.getBlue(lightColour))
-                    * ArgbHelper.getBlue(texturePixel));
-
         }
 
-        int resultingPixel = 0xdd000000;
-        resultingPixel = ArgbHelper.setRed(resultingPixel, resultingRed);
-//        resultingPixel = ArgbHelper.setGreen(resultingPixel, resultingGreen);
-//        resultingPixel = ArgbHelper.setBlue(resultingPixel, resultingBlue);
+        int resultingPixel = 0xff000000
+                | (normalizeTo255(resultingRed) << 16)
+                | (normalizeTo255(resultingGreen) << 8)
+                | normalizeTo255(resultingBlue);
         return resultingPixel;
 
     }

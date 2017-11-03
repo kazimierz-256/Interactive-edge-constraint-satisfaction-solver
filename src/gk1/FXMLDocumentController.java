@@ -5,11 +5,15 @@
  */
 package gk1;
 
+import static java.lang.Math.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ResourceBundle;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Cursor;
@@ -102,17 +106,40 @@ public class FXMLDocumentController implements Initializable {
                 false,
                 Arrays.asList(
                         new Vertex(100, 100, true),
-                        new Vertex(300, 150),
-                        new Vertex(150, 300))
+                        new Vertex(400, 100),
+                        new Vertex(200, 400),
+                        new Vertex(100, 500))
         );
 
-        Vertex position = new Vertex(200, 200, 100);
-        LightSource light = new LightSource(position, 0xff_ff_ff_ff);
+        LightSource light = new LightSource(
+                new Vertex(400, 300, 100),
+                0xff_ff_ff_ff
+        );
 
         GK1.model = new Model();
         GK1.model.registerPolygon(newPolygon);
         GK1.model.registerLight(light);
         GK1.viewer = new Viewer(drawing, 600, 600);
-        GK1.viewer.drawModel(GK1.model);
+
+        long startedTime = System.currentTimeMillis();
+
+        Timeline fiveSecondsWonder = new Timeline(
+                new KeyFrame(javafx.util.Duration.millis(50), (ActionEvent event) -> {
+
+                    // animate the light source
+                    double t = (System.currentTimeMillis() - startedTime) / 10_000d;
+                    double radius = 100 + 200 * sin(t * log(t));
+                    double phase = t + sin(t * log(t)) * sqrt(t);
+                    double z = 110 + 100 * sin(10 * sin(t));
+                    light.setPosition(new Vertex(400 + radius * cos(phase),
+                            300 + radius * sin(phase), z));
+
+                    // draw the model
+                    GK1.viewer.drawModel(GK1.model);
+                }));
+
+        fiveSecondsWonder.setCycleCount(Timeline.INDEFINITE);
+
+        fiveSecondsWonder.play();
     }
 }

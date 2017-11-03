@@ -13,6 +13,7 @@ import static java.lang.Math.sqrt;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.stream.IntStream;
 import javafx.event.ActionEvent;
 import javafx.scene.Cursor;
 import javafx.scene.control.Menu;
@@ -27,6 +28,10 @@ import javafx.scene.input.MouseEvent;
 public class Polygon implements Drawable {
 
     private Vertex rememberedMovedFirst;
+
+    private void nonen(int[] pixels, int localHeight) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
     public enum ActionState {
 
@@ -62,7 +67,6 @@ public class Polygon implements Drawable {
         return vertices.get(0).getZ();
     }
 
-    @Override
     public Reaction toggleAutomaticRelations(Boolean isAutomatic) {
         automaticRelations = isAutomatic;
         return new Reaction(true, false, null);
@@ -171,16 +175,24 @@ public class Polygon implements Drawable {
                         return;
                     }
 
+                    final int localHeightf = localHeight;
+                    final double leftmostf = leftmost;
+                    final double bottommostf = bottommost;
                     // paint all the way from previous to current edge
-                    for (int j = (int) (previousEdge.x - leftmost),
-                            max = (int) (edge.x - leftmost);
-                            j < max;
-                            j++) {
+                    int from = (int) (previousEdge.x - leftmost);
+                    int to = (int) (edge.x - leftmost);
+                    if (to - from > 20) {
 
-                        pixels[localHeight * width + j] = texture.getPixel(
-                                leftmost, bottommost, getZ(), j, localHeight, model.getLights());
+                        IntStream.range(from, to).parallel().forEach((j) -> {
+                            pixels[localHeightf * width + j] = texture.getPixel(
+                                    leftmostf, bottommostf, getZ(), j, localHeightf, model.getLights());
+                        });
+                    } else {
+                        for (int j = from; j < to; j++) {
+                            pixels[localHeight * width + j] = texture.getPixel(
+                                    leftmost, bottommost, getZ(), j, localHeight, model.getLights());
+                        }
                     }
-
                     seekingPair = false;
                 } else {
                     previousEdge = edge;

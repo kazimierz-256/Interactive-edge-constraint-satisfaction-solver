@@ -17,6 +17,9 @@ import javax.imageio.ImageIO;
 public class CachedImage {
 
     private BufferedImage image;
+    private int[] pixels;
+    private int width;
+    private int height;
     private fillMethod method;
 
     public enum fillMethod {
@@ -33,13 +36,23 @@ public class CachedImage {
         } catch (IOException e) {
         }
         image = temporaryImage;
+        width = image.getWidth();
+        height = image.getHeight();
+
+        pixels = new int[width * height];
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                pixels[j * width + i] = image.getRGB(i, j);
+            }
+        }
+
         this.method = fillMethod.repeat;
     }
 
     public CachedImage(int colour) {
-        image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-        System.out.println(colour);
-        image.getRaster().getDataBuffer().setElem(0, colour);
+        width = height = 1;
+//        image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        pixels = new int[]{colour};
         method = fillMethod.repeat;
     }
 
@@ -47,7 +60,8 @@ public class CachedImage {
         switch (method) {
             case repeat:
 //                    return image.getRaster().getDataBuffer().getElem(element);
-                return image.getRGB(x % image.getWidth(), y % image.getHeight());
+//                return image.getRGB(x % image.getWidth(), y % image.getHeight());
+                return pixels[(y % height) * width + (x % width)];
             default:
                 return 0;
         }

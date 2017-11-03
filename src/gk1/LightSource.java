@@ -48,11 +48,6 @@ public class LightSource implements Drawable {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public Reaction toggleAutomaticRelations(Boolean isAutomatic) {
-        return new Reaction();
-    }
-
     public Vertex getPosition() {
         return position;
     }
@@ -72,7 +67,7 @@ public class LightSource implements Drawable {
     @Override
     public void draw(Viewer viewer, Model context) {
         // just draw a normal single vertex
-        viewer.draw(getPosition());
+        viewer.draw(this);
     }
 
 }
