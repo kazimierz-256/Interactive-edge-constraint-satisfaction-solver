@@ -241,8 +241,6 @@ public class Viewer {
         double w, h;
         w = h = light.getPosition().getZ() / 10;
         Paint backup = graphicsContext.getFill();
-        graphicsContext.setFill(Color.WHITE);
-        graphicsContext.fillOval(x - w / 2, y - h / 2, w, h);
         graphicsContext.setFill(Color.BLACK);
         graphicsContext.strokeOval(x - w / 2, y - h / 2, w, h);
         graphicsContext.setFill(backup);
@@ -300,7 +298,7 @@ public class Viewer {
     }
 
     private boolean isDrawing = false;
-    private Object lock = new Object();
+    private final Object lock = new Object();
 
     void drawModel(Model model) {
         if (isDrawing) {
@@ -317,11 +315,11 @@ public class Viewer {
 
         clear();
         lastDrawnModel = model;
-        long startTime = System.nanoTime();
+        long startTime = System.currentTimeMillis();
         GK1.model.draw(GK1.viewer);
 
         double elapsedTimeSeconds
-                = (double) ((System.nanoTime() - startTime)) / 1000_000_000d;
+                = (double) ((System.currentTimeMillis() - startTime)) / 1000d;
         double fps = 1 / elapsedTimeSeconds;
         graphicsContext.strokeText(String.format("%3.2f fps", fps), 10, 50);
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.effect.*?>
 <?import java.net.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
@@ -10,9 +11,156 @@
 <?import javafx.scene.*?>
 <?import javafx.scene.canvas.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="600" prefWidth="600" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gk1.FXMLDocumentController">
+<AnchorPane id="AnchorPane" prefHeight="600" prefWidth="1000" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gk1.FXMLDocumentController">
     <children>
-        <Canvas fx:id="drawing" width="600" height="600" onMouseDragged="#mouseDrag" onMouseMoved="#mouseMoved" onMousePressed="#mousePressed" onMouseReleased="#mouseReleased" />
-        <CheckBox fx:id="automaticRelations" text="Toggle automatic snap" onSelectedChange="#automaticToggle" />
+        <SplitPane dividerPositions="0.312625250501002" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+            <items>
+                <Accordion>
+                    <panes>
+                        <TitledPane animated="false" text="Light">
+                            <content>
+                                <VBox prefHeight="200.0" prefWidth="100.0">
+                                    <children>
+                                        <GridPane>
+                                            <columnConstraints>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                            </columnConstraints>
+                                            <rowConstraints>
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                            </rowConstraints>
+                                            <children>
+                                                <ColorPicker fx:id="lightColour" onAction="#changeColour" GridPane.columnIndex="1" />
+                                                <Label text="Light colour" />
+                                            </children>
+                                        </GridPane>
+                                    </children>
+                                </VBox>
+                            </content>
+                        </TitledPane>
+                        <TitledPane prefHeight="200.0" prefWidth="200.0" text="Polygon">
+                            <content>
+                                <VBox prefHeight="200.0" prefWidth="100.0">
+                                    <children>
+                                        <GridPane prefHeight="411.0" prefWidth="288.0" vgap="20.0">
+                                            <columnConstraints>
+                                                <ColumnConstraints hgrow="SOMETIMES" maxWidth="118.0" minWidth="10.0" prefWidth="88.0" />
+                                                <ColumnConstraints hgrow="SOMETIMES" maxWidth="208.0" minWidth="10.0" prefWidth="162.0" />
+                                            </columnConstraints>
+                                            <rowConstraints>
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                            </rowConstraints>
+                                            <children>
+                                                <Label text="Texture colour" GridPane.rowIndex="1" />
+                                                <GridPane GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                                    <columnConstraints>
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                    </columnConstraints>
+                                                    <rowConstraints>
+                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+
+                                                    </rowConstraints>
+                                                    <children>
+                                                        <RadioButton fx:id="textureConstant" mnemonicParsing="false" text="Colour">
+                                                            <toggleGroup>
+                                                                <ToggleGroup fx:id="texture" />
+                                                            </toggleGroup>
+                                                        </RadioButton>
+                                                        <RadioButton fx:id="textureImage" mnemonicParsing="false" selected="true" text="Image" toggleGroup="$texture" GridPane.rowIndex="1" />
+                                                        <ColorPicker fx:id="textureColor" disable="${!textureConstant.selected}" onAction="#textureColorChange" GridPane.columnIndex="1" />
+                                                        <TextField fx:id="textureURL" disable="${textureConstant.selected}" onAction="#textureUrlChange" promptText="URL of texture" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                    </children>
+                                                </GridPane>
+                                                <Label text="Normal vector" GridPane.rowIndex="2" />
+                                                <Label text="Displacement vector" GridPane.rowIndex="3" />
+                                                <GridPane GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                                    <columnConstraints>
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                    </columnConstraints>
+                                                    <rowConstraints>
+                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                    </rowConstraints>
+                                                    <children>
+                                                        <RadioButton fx:id="displacementImage" mnemonicParsing="false" selected="true" text="Height map" GridPane.rowIndex="1">
+                                                            <toggleGroup>
+                                                                <ToggleGroup fx:id="heightMap" />
+                                                            </toggleGroup>
+                                                        </RadioButton>
+                                                        <RadioButton fx:id="displacementNone" mnemonicParsing="false" text="None" toggleGroup="$heightMap" />
+                                                        <Label text="[0, 0, 0]" GridPane.columnIndex="1" />
+                                                        <TextField fx:id="displacementURL" disable="${displacementNone.selected}" promptText="URL of height map" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                    </children>
+                                                </GridPane>
+                                                <GridPane GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                                    <columnConstraints>
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                    </columnConstraints>
+                                                    <rowConstraints>
+                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                    </rowConstraints>
+                                                    <children>
+                                                        <RadioButton fx:id="normalConstant" mnemonicParsing="false" text="Constant">
+                                                            <toggleGroup>
+                                                                <ToggleGroup fx:id="normalMap" />
+                                                            </toggleGroup>
+                                                        </RadioButton>
+                                                        <RadioButton fx:id="normalImage" mnemonicParsing="false" selected="true" text="Normal map" toggleGroup="$normalMap" GridPane.rowIndex="1" />
+                                                        <Label text="[0, 0, 1]" GridPane.columnIndex="1" />
+                                                        <TextField fx:id="normalURL" disable="${normalConstant.selected}" promptText="URL of normal map" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                    </children>
+                                                </GridPane>
+                                                <Label text="Vector to light source" GridPane.rowIndex="4" />
+                                                <GridPane GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                                    <columnConstraints>
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                    </columnConstraints>
+                                                    <rowConstraints>
+                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                    </rowConstraints>
+                                                    <children>
+                                                        <RadioButton fx:id="lightVectorConstant" mnemonicParsing="false" text="Constant">
+                                                            <toggleGroup>
+                                                                <ToggleGroup fx:id="lightVector" />
+                                                            </toggleGroup>
+                                                        </RadioButton>
+                                                        <RadioButton fx:id="lightVectorAnimated" mnemonicParsing="false" selected="true" text="Animated" toggleGroup="$lightVector" GridPane.rowIndex="1" />
+                                                        <Label text="[0, 0, 1]" GridPane.columnIndex="1" />
+                                                        <SplitMenuButton fx:id="lightVectorAnimationType" disable="${lightVectorConstant.selected}" mnemonicParsing="false" text="Animation" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                                            <items>
+                                                                <MenuItem mnemonicParsing="false" text="Circulating" />
+                                                                <MenuItem mnemonicParsing="false" text="Complex trajectory" />
+                                                            </items>
+                                                        </SplitMenuButton>
+                                                    </children>
+                                                </GridPane>
+                                                <Label text="Automatic snap" />
+                                                <ToggleButton fx:id="automaticRelations" mnemonicParsing="false" onAction="#toggleAutomaticRelations" text="Automatic snap" GridPane.columnIndex="1" />
+                                            </children>
+                                        </GridPane>
+                                    </children>
+                                </VBox>
+                            </content>
+                        </TitledPane>
+                    </panes>
+                </Accordion>
+                <AnchorPane minHeight="0.0" minWidth="0.0">
+                    <children>
+                        <Canvas fx:id="drawing" height="600" onMouseDragged="#mouseDrag" onMouseMoved="#mouseMoved" onMousePressed="#mousePressed" onMouseReleased="#mouseReleased" width="600" />
+                    </children>
+                </AnchorPane>
+            </items>
+        </SplitPane>
     </children>
 </AnchorPane>

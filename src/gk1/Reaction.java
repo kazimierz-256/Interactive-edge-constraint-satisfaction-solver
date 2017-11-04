@@ -13,10 +13,11 @@ import javafx.scene.Cursor;
  */
 public class Reaction {
 
-    private boolean shouldRender;
-    private boolean shouldChangeCursor;
-    private Cursor desiredCursor;
-    private byte cursorPriority = 0;
+    public boolean shouldRender = false;
+    public boolean shouldChangeCursor = false;
+    public Cursor desiredCursor = null;
+    public byte cursorPriority = 0;
+    public boolean hasTouched = false;
 
     Reaction(boolean shouldRender, boolean shouldChangeCursor, Cursor desiredCursor) {
         this.shouldRender = shouldRender;
@@ -30,16 +31,12 @@ public class Reaction {
     }
 
     public void Merge(Reaction anotherReaction) {
-        if (anotherReaction.isShouldChangeCursor()
+        if (anotherReaction.shouldChangeCursor
                 && this.cursorPriority <= anotherReaction.cursorPriority) {
-            this.desiredCursor = anotherReaction.getDesiredCursor();
+            this.desiredCursor = anotherReaction.desiredCursor;
         }
-        this.shouldRender |= anotherReaction.isShouldRender();
-        this.shouldChangeCursor |= anotherReaction.isShouldChangeCursor();
-    }
-
-    public boolean isShouldRender() {
-        return shouldRender;
+        this.shouldRender |= anotherReaction.shouldRender;
+        this.shouldChangeCursor |= anotherReaction.shouldChangeCursor;
     }
 
     public void setShouldRender(boolean shouldRender) {
@@ -48,14 +45,6 @@ public class Reaction {
 
     public void mergeShouldRender(boolean shouldRender) {
         this.shouldRender |= shouldRender;
-    }
-
-    public boolean isShouldChangeCursor() {
-        return shouldChangeCursor;
-    }
-
-    public Cursor getDesiredCursor() {
-        return desiredCursor;
     }
 
     public void setDesiredCursor(Cursor desiredCursor) {

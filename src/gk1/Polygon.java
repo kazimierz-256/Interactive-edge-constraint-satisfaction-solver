@@ -29,8 +29,33 @@ public class Polygon implements Drawable {
 
     private Vertex rememberedMovedFirst;
 
-    private void nonen(int[] pixels, int localHeight) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    boolean isConvex() {
+        return true;
+    }
+
+    boolean hasTouched(MouseEvent event) {
+        return this.mousePressed(event).hasTouched;
+    }
+
+    Polygon clip(Polygon polygon) {
+        // current polygon is convex, the polygon in the parameter is not necessarily
+        return null;
+    }
+
+    public Boolean getAutomaticRelations() {
+        return automaticRelations;
+    }
+
+    public void setAutomaticRelations(Boolean automaticRelations) {
+        this.automaticRelations = automaticRelations;
+    }
+
+    public Texture getTexture() {
+        return texture;
+    }
+
+    public void setTexture(Texture texture) {
+        this.texture = texture;
     }
 
     public enum ActionState {
@@ -48,7 +73,7 @@ public class Polygon implements Drawable {
     }
 
     private Texture texture = new Texture();
-    private Boolean automaticRelations;
+    private Boolean automaticRelations = false;
     private MoveEntity moveEntity;
 //    private Polygon backup;
     private Vertex moveVertex;
@@ -68,7 +93,7 @@ public class Polygon implements Drawable {
     }
 
     public Reaction toggleAutomaticRelations(Boolean isAutomatic) {
-        automaticRelations = isAutomatic;
+        setAutomaticRelations(isAutomatic);
         return new Reaction(true, false, null);
     }
 
@@ -184,13 +209,13 @@ public class Polygon implements Drawable {
                     if (to - from > 20) {
 
                         IntStream.range(from, to).parallel().forEach((j) -> {
-                            pixels[localHeightf * width + j] = texture.getPixel(
-                                    leftmostf, bottommostf, getZ(), j, localHeightf, model.getLights());
+                            pixels[localHeightf * width + j] = getTexture().getPixel(
+                                    leftmostf, bottommostf, getZ(), j, localHeightf, model.getLightsList());
                         });
                     } else {
                         for (int j = from; j < to; j++) {
-                            pixels[localHeight * width + j] = texture.getPixel(
-                                    leftmost, bottommost, getZ(), j, localHeight, model.getLights());
+                            pixels[localHeight * width + j] = getTexture().getPixel(
+                                    leftmost, bottommost, getZ(), j, localHeight, model.getLightsList());
                         }
                     }
                     seekingPair = false;
@@ -256,7 +281,7 @@ public class Polygon implements Drawable {
         drawTexture(viewer, model);
 
         segments.forEach((segment) -> {
-            viewer.draw(segment, automaticRelations);
+            viewer.draw(segment, getAutomaticRelations());
         });
 
         vertices.forEach((vertex) -> {
@@ -310,6 +335,7 @@ public class Polygon implements Drawable {
         if (capturedVertices.isEmpty() && !insidePolygon) {
             return reaction;
         }
+        reaction.hasTouched = true;
         if (capturedVertices.size() > 0) {
             // move vertex
             moveEntity = MoveEntity.movingVertex;
@@ -332,7 +358,7 @@ public class Polygon implements Drawable {
         this.state = ActionState.idle;
 
         // TODO: create a backup of polygon in case there is no possibility
-        if (automaticRelations && moveVertex != null) {
+        if (getAutomaticRelations() && moveVertex != null) {
             reaction.mergeShouldRender(
                     trySnapEdges());
 
@@ -413,7 +439,7 @@ public class Polygon implements Drawable {
             MenuItem menuItem = new MenuItem("Add vertex in the middle");
             menuItem.setOnAction((ActionEvent e) -> {
                 addVertexInbetween(segment);
-                GK1.viewer.drawLastModel();
+//                GK1.viewer.drawLastModel();
             });
             menu.getItems().add(menuItem);
 
@@ -423,7 +449,7 @@ public class Polygon implements Drawable {
                 menuItem = new MenuItem("Make horizontal if possible");
                 menuItem.setOnAction((ActionEvent e) -> {
                     if (tryHorizontal(segment)) {
-                        GK1.viewer.drawLastModel();
+//                        GK1.viewer.drawLastModel();
                     }
                 });
                 menu.getItems().add(menuItem);
@@ -435,7 +461,7 @@ public class Polygon implements Drawable {
                 menuItem = new MenuItem("Make vertical if possible");
                 menuItem.setOnAction((ActionEvent e) -> {
                     if (tryVertical(segment)) {
-                        GK1.viewer.drawLastModel();
+//                        GK1.viewer.drawLastModel();
                     }
                 });
                 menu.getItems().add(menuItem);
@@ -445,7 +471,7 @@ public class Polygon implements Drawable {
             menuItem = new MenuItem("Fix length if possible");
             menuItem.setOnAction((ActionEvent e) -> {
                 if (tryFixedLength(segment)) {
-                    GK1.viewer.drawLastModel();
+//                    GK1.viewer.drawLastModel();
                 }
             });
 
@@ -456,7 +482,7 @@ public class Polygon implements Drawable {
                 menuItem = new MenuItem("Free");
                 menuItem.setOnAction((ActionEvent e) -> {
                     segment.restrictFree();
-                    GK1.viewer.drawLastModel();
+//                    GK1.viewer.drawLastModel();
                 });
                 menu.getItems().add(menuItem);
 
@@ -475,7 +501,7 @@ public class Polygon implements Drawable {
                 menuItem = new MenuItem("Remove");
                 menuItem.setOnAction((ActionEvent e) -> {
                     removeVertex(vertex);
-                    GK1.viewer.drawLastModel();
+//                    GK1.viewer.drawLastModel();
                 });
                 menu.getItems().add(menuItem);
             }
@@ -485,7 +511,7 @@ public class Polygon implements Drawable {
                     vertex.isFixed() ? "Unfreeze" : "Freeze"));
             menuItem.setOnAction((ActionEvent e) -> {
                 vertex.setFixed(!vertex.isFixed());
-                GK1.viewer.drawLastModel();
+//                GK1.viewer.drawLastModel();
             });
             menu.getItems().add(menuItem);
 
@@ -496,7 +522,7 @@ public class Polygon implements Drawable {
             MenuItem menuItem = new MenuItem("Remove polygon");
             menuItem.setOnAction((ActionEvent e) -> {
                 GK1.model.unregisterPolygon(this);
-                GK1.viewer.drawLastModel();
+//                GK1.viewer.drawLastModel();
             });
             menuItems.add(menuItem);
         }

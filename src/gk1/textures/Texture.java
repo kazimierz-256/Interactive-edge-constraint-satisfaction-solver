@@ -31,13 +31,15 @@ public class Texture {
         //https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Normal_map_example_-_Map.png/600px-Normal_map_example_-_Map.png
         // abstract shapes
         normals = new CachedImage(
-                "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Normal_map_example_-_Map.png/600px-Normal_map_example_-_Map.png"
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Normal_map_example_-_Map.png/480px-Normal_map_example_-_Map.png"
         );
         // earth
         // https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Srtm_ramp2.world.21600x10800.jpg/800px-Srtm_ramp2.world.21600x10800.jpg
         // https://upload.wikimedia.org/wikipedia/commons/5/57/Heightmap.png
+        // https://upload.wikimedia.org/wikipedia/commons/c/c3/Heightmap_of_Trencrom_Hill.png
+        // https://www.jpl.nasa.gov/spaceimages/images/largesize/PIA03378_hires.jpg
         heights = new CachedImage(
-                "https://upload.wikimedia.org/wikipedia/commons/c/c3/Heightmap_of_Trencrom_Hill.png"
+                "https://upload.wikimedia.org/wikipedia/commons/e/e3/Lichtenberg_B_LROC.png"
         );
     }
 
@@ -51,18 +53,18 @@ public class Texture {
         // lambert reflectance
         int texturePixel = texture.getPixel(x, y);
         int normalPixel = normals.getPixel(x, y);
-        int heightPixelBlueComponent = ArgbHelper.getBlue(heights.getPixel(x, y));
         double heightScale = 1d / 64;
+        double pixelComputedHeight = ArgbHelper.getBlue(heights.getPixel(x, y)) * heightScale;
 
-        // dont know why -y?
+        // -y since the coordinates are flipped
         Vector N = new Vector((ArgbHelper.getRed(normalPixel) - 127) / 128d,
                 -(ArgbHelper.getGreen(normalPixel) - 127) / 128d,
-                ArgbHelper.getBlue(normalPixel) / 255d); // from normal map
+                ArgbHelper.getBlue(normalPixel) / 255d);
 
-        Vector T = new Vector(1, 0, -N.x);
-        T.scale((ArgbHelper.getBlue(heights.getPixel(x + 1, y)) - heightPixelBlueComponent) * heightScale);
-        Vector B = new Vector(0, 1, -N.y);
-        B.scale((ArgbHelper.getBlue(heights.getPixel(x, y + 1)) - heightPixelBlueComponent) * heightScale);
+        Vector T = new Vector(1d, 0d, -N.x);
+        T.scale(ArgbHelper.getBlue(heights.getPixel(x + 1, y)) * heightScale - pixelComputedHeight);
+        Vector B = new Vector(0d, 1d, -N.y);
+        B.scale(ArgbHelper.getBlue(heights.getPixel(x, y + 1)) * heightScale - pixelComputedHeight);
 
         N.add(T);
         N.add(B);
@@ -74,10 +76,15 @@ public class Texture {
             int lightColour = light.getLightColour();
 
             Vector L = Vector.fromVertex(light.getPosition());
-            L.minus(new Vector(leftmost + x, bottommost + y, z + heightPixelBlueComponent * heightScale));
-            double dotProduct = N.dotProductNormalized(L) * 10 / Math.log(L.getSquareLength());
+            L.minus(new Vector(leftmost + x, bottommost + y, z + pixelComputedHeight));
+            double dotProduct = N.dotProductNormalized(L);
 
-            if (dotProduct > 0) {
+            // personal touch :)
+            dotProduct *= dotProduct;
+            dotProduct *= dotProduct;
+            dotProduct *= 16d / Math.max(1d, Math.log(L.getSquareLength()));
+
+            if (dotProduct > 0d) {
                 resultingRed += (dotProduct * ArgbHelper.getRed(lightColour)) * ArgbHelper.getRed(texturePixel);
                 resultingGreen += (dotProduct * ArgbHelper.getGreen(lightColour)) * ArgbHelper.getGreen(texturePixel);
                 resultingBlue += (dotProduct * ArgbHelper.getBlue(lightColour)) * ArgbHelper.getBlue(texturePixel);

@@ -5,6 +5,8 @@
  */
 package gk1.textures;
 
+import javafx.scene.paint.Color;
+
 /**
  *
  * @author wojciechowskik
@@ -41,5 +43,41 @@ public class ArgbHelper {
 
     public static int setBlue(int colour, int blue) {
         return (colour & 0xff_ff_ff_00) | blue;
+    }
+
+    public static int fromColor(Color doubleColor) {
+        int intColor = 0;
+        intColor = ArgbHelper.setAlpha(intColor, ArgbHelper.toNormalizedInt(
+                256 * doubleColor.getOpacity()
+        ));
+        intColor = ArgbHelper.setRed(intColor, ArgbHelper.toNormalizedInt(
+                256 * doubleColor.getRed()
+        ));
+        intColor = ArgbHelper.setGreen(intColor, ArgbHelper.toNormalizedInt(
+                256 * doubleColor.getGreen()
+        ));
+        intColor = ArgbHelper.setBlue(intColor, ArgbHelper.toNormalizedInt(
+                256 * doubleColor.getBlue()
+        ));
+        return intColor;
+    }
+
+    private static int toNormalizedInt(double color) {
+        if (color > 255d) {
+            return 255;
+        } else if (color < 0d) {
+            return 0;
+        } else {
+            return (int) color;
+        }
+    }
+
+    static Color toColor(int pixel) {
+        return new Color(
+                getRed(pixel) / 256d,
+                getGreen(pixel) / 256d,
+                getBlue(pixel) / 256d,
+                getAlpha(pixel) / 256d
+        );
     }
 }

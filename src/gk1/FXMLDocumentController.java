@@ -5,24 +5,19 @@
  */
 package gk1;
 
+import gk1.textures.ArgbHelper;
+import gk1.textures.CachedImage;
 import static java.lang.Math.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.ResourceBundle;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
+import java.util.*;
+import javafx.animation.*;
+import javafx.event.*;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Cursor;
+import javafx.scene.*;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.control.*;
+import javafx.scene.input.*;
 
 /**
  * FXML Controller class
@@ -31,21 +26,62 @@ import javafx.scene.input.MouseEvent;
  */
 public class FXMLDocumentController implements Initializable {
 
-    ContextMenu contextMenu = new ContextMenu();
+    private ContextMenu contextMenu = new ContextMenu();
+    private LightSource mouseLight = new LightSource(
+            new Vertex(0, 0),
+            0xff_ff_ff_ff
+    );
 
     @FXML
     private Canvas drawing;
-    public CheckBox automaticRelations;
+    @FXML
+    private ToggleButton automaticRelations;
+    @FXML
+    private ColorPicker lightColour;
+    @FXML
+    private ColorPicker textureColor;
+    @FXML
+    private TextField textureURL;
 
     @FXML
-    private void automaticToggle(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-        Reaction reaction = GK1.model.toggleAutomaticRelations(newValue);
-        if (reaction.isShouldRender()) {
-//            GK1.viewer.drawModel(GK1.model);
+    public void textureUrlChange(Event event) {
+        if (GK1.model.activePolygon == null) {
+            return;
         }
+        GK1.model.activePolygon.getTexture().setTexture(new CachedImage(
+                textureURL.getText()
+        ));
+    }
 
-        if (reaction.isShouldChangeCursor()) {
-            drawing.setCursor(reaction.getDesiredCursor());
+    @FXML
+    public void textureColorChange(Event event) {
+        if (GK1.model.activePolygon == null) {
+            return;
+        }
+        GK1.model.activePolygon.getTexture().setTexture(new CachedImage(
+                ArgbHelper.fromColor(textureColor.getValue())
+        ));
+    }
+
+    @FXML
+    public void changeColour(Event event) {
+        int color = ArgbHelper.fromColor(lightColour.getValue());
+        GK1.model.getLightsList().stream().forEach((light) -> {
+            light.setLight(color);
+        });
+    }
+
+    @FXML
+    private void toggleAutomaticRelations() {
+        if (GK1.model.activePolygon == null) {
+            return;
+        }
+        Reaction reaction = GK1.model.activePolygon.toggleAutomaticRelations(
+                automaticRelations.isSelected()
+        );
+
+        if (reaction.shouldChangeCursor) {
+            drawing.setCursor(reaction.desiredCursor);
         } else {
             drawing.setCursor(Cursor.DEFAULT);
         }
@@ -53,13 +89,13 @@ public class FXMLDocumentController implements Initializable {
 
     @FXML
     private void mouseMoved(MouseEvent mouseEvent) {
+        mouseLight.setPosition(new Vertex(
+                mouseEvent.getX(), mouseEvent.getY(), 50
+        ));
         Reaction reaction = GK1.model.mouseMoved(mouseEvent);
-        if (reaction.isShouldRender()) {
-//            GK1.viewer.drawModel(GK1.model);
-        }
 
-        if (reaction.isShouldChangeCursor()) {
-            drawing.setCursor(reaction.getDesiredCursor());
+        if (reaction.shouldChangeCursor) {
+            drawing.setCursor(reaction.desiredCursor);
         } else {
             drawing.setCursor(Cursor.DEFAULT);
         }
@@ -88,9 +124,6 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private void mouseReleased(MouseEvent mouseEvent) {
         Reaction reaction = GK1.model.mouseReleased(mouseEvent);
-        if (reaction.isShouldRender()) {
-//            GK1.viewer.drawModel(GK1.model);
-        }
     }
 
     @FXML
@@ -106,9 +139,9 @@ public class FXMLDocumentController implements Initializable {
                 false,
                 Arrays.asList(
                         new Vertex(100, 100, true),
-                        new Vertex(400, 100),
+                        new Vertex(650, 50),
                         new Vertex(600, 500),
-                        new Vertex(100, 500))
+                        new Vertex(150, 550))
         );
 
         LightSource light1 = new LightSource(
@@ -125,29 +158,32 @@ public class FXMLDocumentController implements Initializable {
         GK1.model.registerPolygon(newPolygon);
         GK1.model.registerLight(light1);
         GK1.model.registerLight(light2);
+        GK1.model.registerLight(mouseLight);
         GK1.viewer = new Viewer(drawing, 600, 600);
 
         long startedTime = System.currentTimeMillis();
 
         Timeline fiveSecondsWonder = new Timeline(
-                new KeyFrame(javafx.util.Duration.millis(50), (ActionEvent event) -> {
+                new KeyFrame(javafx.util.Duration.millis(100), (ActionEvent event) -> {
 
                     // animate the light source
                     double t = (System.currentTimeMillis() - startedTime) / 10_000d;
 
-                    double radius = 100 + 200 * sin(t) + 100 * sin(2 * t);
-                    double phase = -t / 2 + sin(t) * sqrt(t);
-                    double z = 1010 + 1000 * sin(10 * sin(t));
-                    light1.setPosition(new Vertex(100 + radius * cos(phase),
+                    // light1 animation
+                    double radius = 100 + 200 * cos(sin(t) + 10 * sin(2 * t));
+                    double phase = -t / 2 + (sin(t) * sqrt(t));
+                    double z = 200 + 200 * sin(10 * sin(t));
+                    light1.setPosition(new Vertex(300 + radius * cos(phase),
                             200 + radius * sin(phase), z));
 
-                    radius = 200 + 100 * sin(t) + 50 * sin(5 * t);
-                    phase = t - 2 * sin(t / 2) * sqrt(t);
-                    z = 110 + 100 * sin(30 * sin(t));
+                    // light2 animation
+                    radius = 200 + 100 * sin(sin(t) + 5 * sin(5 * t));
+                    phase = t - 2 * cos(sin(t / 2) * sqrt(t));
+                    z = 100 + 100 * sin(30 * sin(t));
                     light2.setPosition(new Vertex(200 + radius * cos(phase),
-                            100 + radius * sin(phase), z));
+                            300 + radius * sin(phase), z));
 
-                    // draw the model
+                    // draw the actual model
                     GK1.viewer.drawModel(GK1.model);
                 }));
 

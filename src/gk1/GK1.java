@@ -25,7 +25,7 @@ public class GK1 extends Application {
     @Override
     public void start(Stage primaryStage) throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource("FXMLDocument.fxml"));
-        Scene scene = new Scene(root, 600, 600);
+        Scene scene = new Scene(root);
         scene.getStylesheets().add("gk1/style.css");
         GK1.accessScene = scene;
         primaryStage.widthProperty().addListener((obs, oldVal, newVal) -> {

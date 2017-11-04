@@ -6,8 +6,10 @@
 package gk1.textures;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import javafx.scene.paint.Color;
 import javax.imageio.ImageIO;
 
 /**
@@ -21,6 +23,24 @@ public class CachedImage {
     private int width;
     private int height;
     private fillMethod method;
+    private String url;
+    private textureType type;
+
+    public String getUrl() {
+        return url;
+    }
+
+    public Color getColor() {
+        if (type == textureType.color) {
+            return ArgbHelper.toColor(pixels[0]);
+        } else {
+            return Color.BLACK;
+        }
+    }
+
+    public textureType getType() {
+        return type;
+    }
 
     public enum fillMethod {
         flip,
@@ -28,12 +48,26 @@ public class CachedImage {
         stretch
     }
 
-    public CachedImage(String filesrc) {
+    public enum textureType {
+        color,
+        urlStream
+    }
 
+    public CachedImage(String filesrc) {
         BufferedImage temporaryImage = null;
+        type = textureType.urlStream;
+        url = filesrc;
+        File possibleFile = new File(filesrc);
         try {
-            temporaryImage = ImageIO.read(new URL(filesrc));
+
+            if (possibleFile.exists() && !possibleFile.isDirectory()) {
+                temporaryImage = ImageIO.read(possibleFile);
+            } else {
+                temporaryImage = ImageIO.read(new URL(filesrc));
+            }
         } catch (IOException e) {
+            CreateSinglePixel(0xff_ff_ff_ff);
+            return;
         }
         image = temporaryImage;
         width = image.getWidth();
@@ -50,6 +84,11 @@ public class CachedImage {
     }
 
     public CachedImage(int colour) {
+        CreateSinglePixel(colour);
+    }
+
+    private void CreateSinglePixel(int colour) {
+        type = textureType.color;
         width = height = 1;
 //        image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         pixels = new int[]{colour};
