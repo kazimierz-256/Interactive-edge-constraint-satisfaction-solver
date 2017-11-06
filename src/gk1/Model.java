@@ -29,12 +29,11 @@ public class Model {
     }
 
     public void draw(Viewer viewer) {
-
-        polygons.forEach((polygon) -> {
+        polygons.forEach(polygon -> {
             polygon.draw(viewer, this);
         });
 
-        lights.forEach((light) -> {
+        lights.forEach(light -> {
             light.draw(viewer, this);
         });
     }
@@ -116,7 +115,7 @@ public class Model {
 
             Reaction reaction = polygon.mousePressed(mouseEvent);
             if (!activatedPolygon && reaction.hasTouched) {
-                makeActivePolygon(polygon);
+                markPolygonAsActive(polygon);
                 activatedPolygon = true;
             }
             mergedReaction.Merge(reaction);
@@ -152,32 +151,58 @@ public class Model {
         return lights;
     }
 
-    private void makeActivePolygon(Polygon polygon) {
+    public void markPolygonAsActive(Polygon polygon) {
         activePolygon = polygon;
         ((ToggleButton) GK1.accessScene.lookup("#automaticRelations")).setSelected(
                 polygon.getAutomaticRelations()
         );
         Texture polygonTexture = polygon.getTexture();
-        CachedImage texture = polygonTexture.getTexture();
-        if (texture.getType() == CachedImage.textureType.color) {
 
-            ((RadioButton) GK1.accessScene.lookup("#textureConstant")).setSelected(
+        // texture settings
+        CachedImage background = polygonTexture.getBackground();
+        if (background.getType() == CachedImage.textureType.color) {
+
+            ((RadioButton) GK1.accessScene.lookup("#backgroundConstant")).setSelected(
                     true
             );
-            ((ColorPicker) GK1.accessScene.lookup("#textureColor")).setValue(texture.getColor());
-            ((TextField) GK1.accessScene.lookup("#textureURL")).setText("");
-        } else if (texture.getType() == CachedImage.textureType.urlStream) {
+            ((ColorPicker) GK1.accessScene.lookup("#backgroundColor")).setValue(background.getColor());
+        } else if (background.getType() == CachedImage.textureType.urlStream) {
 
-            ((RadioButton) GK1.accessScene.lookup("#textureImage")).setSelected(
+            ((RadioButton) GK1.accessScene.lookup("#backgroundImage")).setSelected(
                     true
             );
-            ((TextField) GK1.accessScene.lookup("#textureURL")).setText(texture.getUrl());
+            ((TextField) GK1.accessScene.lookup("#backgroundURL")).setText(background.getUrl());
         }
-//        CachedImage normals = polygonTexture.getTexture();
-//        CachedImage displacement = polygonTexture.getTexture();
+
+        // normal settings
+        CachedImage normals = polygonTexture.getNormals();
+        if (normals.getType() == CachedImage.textureType.color) {
+
+            ((RadioButton) GK1.accessScene.lookup("#normalConstant")).setSelected(
+                    true
+            );
+        } else if (normals.getType() == CachedImage.textureType.urlStream) {
+
+            ((RadioButton) GK1.accessScene.lookup("#normalImage")).setSelected(
+                    true
+            );
+            ((TextField) GK1.accessScene.lookup("#normalURL")).setText(normals.getUrl());
+        }
+
+        // displacement settings
+        CachedImage displacement = polygonTexture.getHeights();
+        if (displacement.getType() == CachedImage.textureType.color) {
+
+            ((RadioButton) GK1.accessScene.lookup("#displacementConstant")).setSelected(
+                    true
+            );
+        } else if (displacement.getType() == CachedImage.textureType.urlStream) {
+
+            ((RadioButton) GK1.accessScene.lookup("#displacementImage")).setSelected(
+                    true
+            );
+            ((TextField) GK1.accessScene.lookup("#displacementURL")).setText(displacement.getUrl());
+        }
     }
 
-    private void makeActiveLightSource(LightSource light) {
-
-    }
 }

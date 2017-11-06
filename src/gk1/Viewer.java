@@ -238,12 +238,14 @@ public class Viewer {
     public void draw(LightSource light) {
         double x = light.getPosition().getX();
         double y = light.getPosition().getY();
-        double w, h;
-        w = h = light.getPosition().getZ() / 10;
-        Paint backup = graphicsContext.getFill();
-        graphicsContext.setFill(Color.BLACK);
-        graphicsContext.strokeOval(x - w / 2, y - h / 2, w, h);
-        graphicsContext.setFill(backup);
+        double radius = light.getPosition().getZ() / 10;
+        Paint backupPaint = graphicsContext.getStroke();
+        graphicsContext.setStroke(Color.BLACK);
+        graphicsContext.strokeOval(x - radius / 2, y - radius / 2, radius, radius);
+        graphicsContext.setStroke(Color.WHITE);
+        radius *= 1.1d;
+        graphicsContext.strokeOval(x - radius / 2, y - radius / 2, radius, radius);
+        graphicsContext.setStroke(backupPaint);
     }
 
     public void draw(Vertex vertex) {

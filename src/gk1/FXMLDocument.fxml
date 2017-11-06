@@ -42,10 +42,10 @@
                             <content>
                                 <VBox prefHeight="200.0" prefWidth="100.0">
                                     <children>
-                                        <GridPane prefHeight="411.0" prefWidth="288.0" vgap="20.0">
+                                        <GridPane prefHeight="458.0" prefWidth="288.0" vgap="20.0">
                                             <columnConstraints>
-                                                <ColumnConstraints hgrow="SOMETIMES" maxWidth="118.0" minWidth="10.0" prefWidth="88.0" />
-                                                <ColumnConstraints hgrow="SOMETIMES" maxWidth="208.0" minWidth="10.0" prefWidth="162.0" />
+                                                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="200.0" minWidth="100.0" prefWidth="101.0" />
+                                                <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" maxWidth="271.0" minWidth="180.0" prefWidth="187.0" />
                                             </columnConstraints>
                                             <rowConstraints>
                                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -55,7 +55,7 @@
                                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                             </rowConstraints>
                                             <children>
-                                                <Label text="Texture colour" GridPane.rowIndex="1" />
+                                                <Label text="Texture colour" wrapText="true" GridPane.rowIndex="1" />
                                                 <GridPane GridPane.columnIndex="1" GridPane.rowIndex="1">
                                                     <columnConstraints>
                                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -67,18 +67,18 @@
 
                                                     </rowConstraints>
                                                     <children>
-                                                        <RadioButton fx:id="textureConstant" mnemonicParsing="false" text="Colour">
+                                                        <RadioButton fx:id="backgroundConstant" mnemonicParsing="false" onAction="#backgroundColorChange" text="Colour">
                                                             <toggleGroup>
-                                                                <ToggleGroup fx:id="texture" />
+                                                                <ToggleGroup fx:id="background" />
                                                             </toggleGroup>
                                                         </RadioButton>
-                                                        <RadioButton fx:id="textureImage" mnemonicParsing="false" selected="true" text="Image" toggleGroup="$texture" GridPane.rowIndex="1" />
-                                                        <ColorPicker fx:id="textureColor" disable="${!textureConstant.selected}" onAction="#textureColorChange" GridPane.columnIndex="1" />
-                                                        <TextField fx:id="textureURL" disable="${textureConstant.selected}" onAction="#textureUrlChange" promptText="URL of texture" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                        <RadioButton fx:id="backgroundImage" mnemonicParsing="false" onAction="#backgroundUrlChange" selected="true" text="Image" toggleGroup="$background" GridPane.rowIndex="1" />
+                                                        <ColorPicker fx:id="backgroundColor" disable="${!backgroundConstant.selected}" onAction="#backgroundColorChange" GridPane.columnIndex="1" />
+                                                        <TextField fx:id="backgroundURL" disable="${backgroundConstant.selected}" onAction="#backgroundUrlChange" promptText="URL of background" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                     </children>
                                                 </GridPane>
-                                                <Label text="Normal vector" GridPane.rowIndex="2" />
-                                                <Label text="Displacement vector" GridPane.rowIndex="3" />
+                                                <Label text="Normal vector" wrapText="true" GridPane.rowIndex="2" />
+                                                <Label text="Displacement vector" wrapText="true" GridPane.rowIndex="3" />
                                                 <GridPane GridPane.columnIndex="1" GridPane.rowIndex="3">
                                                     <columnConstraints>
                                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -89,14 +89,14 @@
                                                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                                     </rowConstraints>
                                                     <children>
-                                                        <RadioButton fx:id="displacementImage" mnemonicParsing="false" selected="true" text="Height map" GridPane.rowIndex="1">
+                                                        <RadioButton fx:id="displacementImage" mnemonicParsing="false" onAction="#displacementUrlChange" selected="true" text="Height map" GridPane.rowIndex="1">
                                                             <toggleGroup>
                                                                 <ToggleGroup fx:id="heightMap" />
                                                             </toggleGroup>
                                                         </RadioButton>
-                                                        <RadioButton fx:id="displacementNone" mnemonicParsing="false" text="None" toggleGroup="$heightMap" />
+                                                        <RadioButton fx:id="displacementConstant" mnemonicParsing="false" onAction="#displacementVectorDefault" text="None" toggleGroup="$heightMap" />
                                                         <Label text="[0, 0, 0]" GridPane.columnIndex="1" />
-                                                        <TextField fx:id="displacementURL" disable="${displacementNone.selected}" promptText="URL of height map" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                        <TextField fx:id="displacementURL" disable="${displacementNone.selected}" onAction="#displacementUrlChange" promptText="URL of height map" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                     </children>
                                                 </GridPane>
                                                 <GridPane GridPane.columnIndex="1" GridPane.rowIndex="2">
@@ -109,17 +109,17 @@
                                                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                                     </rowConstraints>
                                                     <children>
-                                                        <RadioButton fx:id="normalConstant" mnemonicParsing="false" text="Constant">
+                                                        <RadioButton fx:id="normalConstant" mnemonicParsing="false" onAction="#normalVectorDefault" text="Constant">
                                                             <toggleGroup>
                                                                 <ToggleGroup fx:id="normalMap" />
                                                             </toggleGroup>
                                                         </RadioButton>
-                                                        <RadioButton fx:id="normalImage" mnemonicParsing="false" selected="true" text="Normal map" toggleGroup="$normalMap" GridPane.rowIndex="1" />
+                                                        <RadioButton fx:id="normalImage" mnemonicParsing="false" onAction="#normalUrlChange" selected="true" text="Normal map" toggleGroup="$normalMap" GridPane.rowIndex="1" />
                                                         <Label text="[0, 0, 1]" GridPane.columnIndex="1" />
-                                                        <TextField fx:id="normalURL" disable="${normalConstant.selected}" promptText="URL of normal map" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                        <TextField fx:id="normalURL" disable="${normalConstant.selected}" onAction="#normalUrlChange" promptText="URL of normal map" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                     </children>
                                                 </GridPane>
-                                                <Label text="Vector to light source" GridPane.rowIndex="4" />
+                                                <Label text="Vector to light source" wrapText="true" GridPane.rowIndex="4" />
                                                 <GridPane GridPane.columnIndex="1" GridPane.rowIndex="4">
                                                     <columnConstraints>
                                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -130,14 +130,14 @@
                                                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                                     </rowConstraints>
                                                     <children>
-                                                        <RadioButton fx:id="lightVectorConstant" mnemonicParsing="false" text="Constant">
+                                                        <RadioButton fx:id="lightVectorConstant" mnemonicParsing="false" onAction="#lightVectorDefault" text="Constant">
                                                             <toggleGroup>
                                                                 <ToggleGroup fx:id="lightVector" />
                                                             </toggleGroup>
                                                         </RadioButton>
-                                                        <RadioButton fx:id="lightVectorAnimated" mnemonicParsing="false" selected="true" text="Animated" toggleGroup="$lightVector" GridPane.rowIndex="1" />
+                                                        <RadioButton fx:id="lightVectorAnimated" mnemonicParsing="false" onAction="#lightVectorAnimated" selected="true" text="Animated" toggleGroup="$lightVector" GridPane.rowIndex="1" />
                                                         <Label text="[0, 0, 1]" GridPane.columnIndex="1" />
-                                                        <SplitMenuButton fx:id="lightVectorAnimationType" disable="${lightVectorConstant.selected}" mnemonicParsing="false" text="Animation" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                                        <SplitMenuButton fx:id="lightVectorAnimationType" disable="${lightVectorConstant.selected}" mnemonicParsing="false" onAction="#lightVectorAnimated" text="Animation" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                                             <items>
                                                                 <MenuItem mnemonicParsing="false" text="Circulating" />
                                                                 <MenuItem mnemonicParsing="false" text="Complex trajectory" />
@@ -145,7 +145,7 @@
                                                         </SplitMenuButton>
                                                     </children>
                                                 </GridPane>
-                                                <Label text="Automatic snap" />
+                                                <Label text="Automatic snap" wrapText="true" />
                                                 <ToggleButton fx:id="automaticRelations" mnemonicParsing="false" onAction="#toggleAutomaticRelations" text="Automatic snap" GridPane.columnIndex="1" />
                                             </children>
                                         </GridPane>

@@ -5,9 +5,10 @@
  */
 package gk1;
 
+import animation.Helicopter;
+import animation.PoliceHeadlights;
 import gk1.textures.ArgbHelper;
 import gk1.textures.CachedImage;
-import static java.lang.Math.*;
 import java.net.URL;
 import java.util.*;
 import javafx.animation.*;
@@ -39,27 +40,89 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private ColorPicker lightColour;
     @FXML
-    private ColorPicker textureColor;
+    private ColorPicker backgroundColor;
     @FXML
-    private TextField textureURL;
+    private TextField backgroundURL;
+    @FXML
+    private TextField displacementURL;
+    @FXML
+    private TextField normalURL;
+    @FXML
+    private SplitMenuButton lightVectorAnimationType;
 
     @FXML
-    public void textureUrlChange(Event event) {
+    public void lightVectorDefault(Event event) {
         if (GK1.model.activePolygon == null) {
             return;
         }
-        GK1.model.activePolygon.getTexture().setTexture(new CachedImage(
-                textureURL.getText()
+        GK1.model.activePolygon.setArtificialLight(true);
+    }
+
+    @FXML
+    public void lightVectorAnimated(Event event) {
+        if (GK1.model.activePolygon == null) {
+            return;
+        }
+        GK1.model.activePolygon.setArtificialLight(false);
+    }
+
+    @FXML
+    public void normalVectorDefault(Event event) {
+        if (GK1.model.activePolygon == null) {
+            return;
+        }
+        GK1.model.activePolygon.getTexture().setNormals(new CachedImage(
+                0x00_7f_7f_ff
         ));
     }
 
     @FXML
-    public void textureColorChange(Event event) {
+    public void normalUrlChange(Event event) {
         if (GK1.model.activePolygon == null) {
             return;
         }
-        GK1.model.activePolygon.getTexture().setTexture(new CachedImage(
-                ArgbHelper.fromColor(textureColor.getValue())
+        GK1.model.activePolygon.getTexture().setNormals(new CachedImage(
+                normalURL.getText()
+        ));
+    }
+
+    @FXML
+    public void displacementVectorDefault(Event event) {
+        if (GK1.model.activePolygon == null) {
+            return;
+        }
+        GK1.model.activePolygon.getTexture().setHeights(new CachedImage(
+                0
+        ));
+    }
+
+    @FXML
+    public void displacementUrlChange(Event event) {
+        if (GK1.model.activePolygon == null) {
+            return;
+        }
+        GK1.model.activePolygon.getTexture().setHeights(new CachedImage(
+                displacementURL.getText()
+        ));
+    }
+
+    @FXML
+    public void backgroundUrlChange(Event event) {
+        if (GK1.model.activePolygon == null) {
+            return;
+        }
+        GK1.model.activePolygon.getTexture().setBackground(new CachedImage(
+                backgroundURL.getText()
+        ));
+    }
+
+    @FXML
+    public void backgroundColorChange(Event event) {
+        if (GK1.model.activePolygon == null) {
+            return;
+        }
+        GK1.model.activePolygon.getTexture().setBackground(new CachedImage(
+                ArgbHelper.fromColor(backgroundColor.getValue())
         ));
     }
 
@@ -145,19 +208,33 @@ public class FXMLDocumentController implements Initializable {
         );
 
         LightSource light1 = new LightSource(
-                new Vertex(400, 300, 100),
-                0xff_ff_ff_dd
+                new Vertex(0, 0),
+                0,
+                32d,
+                new Helicopter(123),
+                new PoliceHeadlights(1)
         );
 
         LightSource light2 = new LightSource(
-                new Vertex(400, 300, 100),
-                0xff_ff_aa_33
+                new Vertex(0, 0),
+                0xff_ff_aa_33,
+                16d,
+                new Helicopter(456)
+        );
+
+        LightSource light3 = new LightSource(
+                new Vertex(0, 0),
+                0,
+                8d,
+                new Helicopter(1293),
+                new PoliceHeadlights(23)
         );
 
         GK1.model = new Model();
         GK1.model.registerPolygon(newPolygon);
         GK1.model.registerLight(light1);
         GK1.model.registerLight(light2);
+        GK1.model.registerLight(light3);
         GK1.model.registerLight(mouseLight);
         GK1.viewer = new Viewer(drawing, 600, 600);
 
@@ -167,21 +244,11 @@ public class FXMLDocumentController implements Initializable {
                 new KeyFrame(javafx.util.Duration.millis(64), (ActionEvent event) -> {
 
                     // animate the light source
-                    double t = (System.currentTimeMillis() - startedTime) / 10_000d;
+                    double t = (System.currentTimeMillis() - startedTime) / 1000d;
 
-                    // light1 animation
-                    double radius = 100 + 200 * cos(sin(t) + 10 * sin(2 * t));
-                    double phase = -t / 2 + (sin(t) * sqrt(t));
-                    double z = 200 + 200 * sin(10 * sin(t));
-                    light1.setPosition(new Vertex(300 + radius * cos(phase),
-                            200 + radius * sin(phase), z));
-
-                    // light2 animation
-                    radius = 200 + 100 * sin(sin(t) + 5 * sin(5 * t));
-                    phase = t - 2 * cos(sin(t / 2) * sqrt(t));
-                    z = 100 + 100 * sin(30 * sin(t));
-                    light2.setPosition(new Vertex(200 + radius * cos(phase),
-                            300 + radius * sin(phase), z));
+                    GK1.model.getLightsList().forEach(light -> {
+                        light.animate(t);
+                    });
 
                     // draw the actual model
                     GK1.viewer.drawModel(GK1.model);

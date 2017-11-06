@@ -5,6 +5,8 @@
  */
 package gk1;
 
+import animation.ColorAnimator;
+import animation.PositionAnimator;
 import java.util.ArrayList;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseEvent;
@@ -16,7 +18,25 @@ import javafx.scene.input.MouseEvent;
 public class LightSource implements Drawable {
 
     private Vertex position;
-    private int light;
+    private int light = 0xff_ff_ff_ff;
+    private double intensity = 16d;
+    private PositionAnimator positionAnimator;
+    private ColorAnimator colorAnimator;
+
+    LightSource(Vertex vertex, int i, double d, PositionAnimator positionAnimator) {
+        this.position = position;
+        this.light = light;
+        this.intensity = intensity;
+        this.positionAnimator = positionAnimator;
+    }
+
+    LightSource(Vertex vertex, int i, double d, PositionAnimator positionAnimator, ColorAnimator colorAnimator) {
+        this.position = position;
+        this.light = light;
+        this.intensity = intensity;
+        this.positionAnimator = positionAnimator;
+        this.colorAnimator = colorAnimator;
+    }
 
     @Override
     public double getZ() {
@@ -26,6 +46,12 @@ public class LightSource implements Drawable {
     public LightSource(Vertex position, int light) {
         this.position = position;
         this.light = light;
+    }
+
+    public LightSource(Vertex position, int light, double intensity) {
+        this.position = position;
+        this.light = light;
+        this.intensity = intensity;
     }
 
     @Override
@@ -68,6 +94,39 @@ public class LightSource implements Drawable {
     public void draw(Viewer viewer, Model context) {
         // just draw a normal single vertex
         viewer.draw(this);
+    }
+
+    public void setIntensity(double intensity) {
+        this.intensity = intensity;
+    }
+
+    public double getIntensity() {
+        return intensity;
+    }
+
+    void animate(double t) {
+        if (getColorAnimator() != null) {
+            light = getColorAnimator().animate(t);
+        }
+        if (getPositionAnimator() != null) {
+            position = getPositionAnimator().animate(t);
+        }
+    }
+
+    public PositionAnimator getPositionAnimator() {
+        return positionAnimator;
+    }
+
+    public void setPositionAnimator(PositionAnimator positionAnimator) {
+        this.positionAnimator = positionAnimator;
+    }
+
+    public ColorAnimator getColorAnimator() {
+        return colorAnimator;
+    }
+
+    public void setColorAnimator(ColorAnimator colorAnimator) {
+        this.colorAnimator = colorAnimator;
     }
 
 }

@@ -57,6 +57,10 @@ public class Polygon implements Drawable {
         this.texture = texture;
     }
 
+    void setArtificialLight(boolean artificial) {
+        isArtificialLight = artificial;
+    }
+
     public enum ActionState {
 
         moving,
@@ -71,8 +75,9 @@ public class Polygon implements Drawable {
         none
     }
 
+    private boolean isArtificialLight = false;
     private Texture texture = new Texture();
-    private Boolean automaticRelations = false;
+    private boolean automaticRelations = false;
     private MoveEntity moveEntity;
 //    private Polygon backup;
     private Vertex moveVertex;
@@ -232,7 +237,18 @@ public class Polygon implements Drawable {
         final double z = getZ();
         final double leftmostf = leftmost;
         final double bottommostf = bottommost;
-        ArrayList<LightSource> lights = model.getLightsList();
+        ArrayList<LightSource> lights = new ArrayList<>();
+
+        if (isArtificialLight) {
+            lights.add(new LightSource(
+                    new Vertex(0, 0, 100000),
+                    0xff_ff_ff_ff,
+                    2d * Math.log(100000 * 100000)
+            ));
+        } else {
+            lights.addAll(model.getLightsList());
+        }
+
         // twice the framerate :)
         scanlines.stream().parallel().forEach((scanline) -> {
             for (int j = scanline.from; j < scanline.to; j++) {

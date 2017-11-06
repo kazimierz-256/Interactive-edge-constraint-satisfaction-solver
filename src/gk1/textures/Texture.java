@@ -16,7 +16,7 @@ import java.util.ArrayList;
  */
 public class Texture {
 
-    private CachedImage texture;
+    private CachedImage background;
     private CachedImage normals;
     private CachedImage heights;
 
@@ -25,7 +25,7 @@ public class Texture {
 //https://upload.wikimedia.org/wikipedia/commons/4/43/Radiosity-yes.jpg
 //https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Painters_problem.svg/340px-Painters_problem.svg.png
         // pizza
-        texture = new CachedImage(
+        background = new CachedImage(
                 "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Pepperoni_pizza.jpg/640px-Pepperoni_pizza.jpg"
         );
         //https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Normal_map_example_-_Map.png/600px-Normal_map_example_-_Map.png
@@ -44,16 +44,16 @@ public class Texture {
     }
 
     public Texture(CachedImage texture, CachedImage normals, CachedImage heights) {
-        this.texture = texture;
+        this.background = texture;
         this.normals = normals;
         this.heights = heights;
     }
 
     public int getPixel(double leftmost, double bottommost, double z, int x, int y, ArrayList<LightSource> lights) {
-        // lambert reflectance
-        int texturePixel = texture.getPixel(x, y);
+        // lambert reflectance model
+        int texturePixel = background.getPixel(x, y);
         int normalPixel = normals.getPixel(x, y);
-        double heightScale = 1d / 64;
+        double heightScale = 1d / 128;
         double pixelComputedHeight = ArgbHelper.getBlue(heights.getPixel(x, y)) * heightScale;
 
         // -y since the coordinates are flipped
@@ -82,7 +82,7 @@ public class Texture {
             // personal touch :)
             dotProduct *= dotProduct;
             dotProduct *= dotProduct;
-            dotProduct *= 16d / Math.max(1d, Math.log(L.getSquareLength()));
+            dotProduct *= light.getIntensity() / Math.max(1d, Math.log(L.getSquareLength()));
 
             if (dotProduct > 0d) {
                 resultingRed += (dotProduct * ArgbHelper.getRed(lightColour)) * ArgbHelper.getRed(texturePixel);
@@ -99,12 +99,12 @@ public class Texture {
 
     }
 
-    public CachedImage getTexture() {
-        return texture;
+    public CachedImage getBackground() {
+        return background;
     }
 
-    public void setTexture(CachedImage texture) {
-        this.texture = texture;
+    public void setBackground(CachedImage background) {
+        this.background = background;
     }
 
     public CachedImage getNormals() {
