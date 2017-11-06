@@ -164,7 +164,7 @@ public class FXMLDocumentController implements Initializable {
         long startedTime = System.currentTimeMillis();
 
         Timeline fiveSecondsWonder = new Timeline(
-                new KeyFrame(javafx.util.Duration.millis(100), (ActionEvent event) -> {
+                new KeyFrame(javafx.util.Duration.millis(64), (ActionEvent event) -> {
 
                     // animate the light source
                     double t = (System.currentTimeMillis() - startedTime) / 10_000d;

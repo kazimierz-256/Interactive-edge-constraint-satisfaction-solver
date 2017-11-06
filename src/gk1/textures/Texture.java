@@ -39,7 +39,7 @@ public class Texture {
         // https://upload.wikimedia.org/wikipedia/commons/c/c3/Heightmap_of_Trencrom_Hill.png
         // https://www.jpl.nasa.gov/spaceimages/images/largesize/PIA03378_hires.jpg
         heights = new CachedImage(
-                "https://upload.wikimedia.org/wikipedia/commons/e/e3/Lichtenberg_B_LROC.png"
+                "https://www.jpl.nasa.gov/spaceimages/images/largesize/PIA03378_hires.jpg"
         );
     }
 

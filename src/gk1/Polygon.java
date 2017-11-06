@@ -13,7 +13,6 @@ import static java.lang.Math.sqrt;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.stream.IntStream;
 import javafx.event.ActionEvent;
 import javafx.scene.Cursor;
 import javafx.scene.control.Menu;
@@ -181,6 +180,8 @@ public class Polygon implements Drawable {
 
         LinkedList<ActiveEdge> activeEdges = new LinkedList<>();
 
+        ArrayList<Scanline> scanlines = new ArrayList<>(height);
+
         // fill a bufferedimage with pixels using the texture field
         for (int localHeight = 0; localHeight < height; localHeight++) {
             if (!edgeTable[localHeight].isEmpty()) {
@@ -200,24 +201,10 @@ public class Polygon implements Drawable {
                         return;
                     }
 
-                    final int localHeightf = localHeight;
-                    final double leftmostf = leftmost;
-                    final double bottommostf = bottommost;
                     // paint all the way from previous to current edge
                     int from = (int) (previousEdge.x - leftmost);
                     int to = (int) (edge.x - leftmost);
-                    if (to - from > 20) {
-
-                        IntStream.range(from, to).parallel().forEach((j) -> {
-                            pixels[localHeightf * width + j] = getTexture().getPixel(
-                                    leftmostf, bottommostf, getZ(), j, localHeightf, model.getLightsList());
-                        });
-                    } else {
-                        for (int j = from; j < to; j++) {
-                            pixels[localHeight * width + j] = getTexture().getPixel(
-                                    leftmost, bottommost, getZ(), j, localHeight, model.getLightsList());
-                        }
-                    }
+                    scanlines.add(new Scanline(from, to, localHeight));
                     seekingPair = false;
                 } else {
                     previousEdge = edge;
@@ -241,6 +228,18 @@ public class Polygon implements Drawable {
             activeEdges = toSpare;
 
         }
+
+        final double z = getZ();
+        final double leftmostf = leftmost;
+        final double bottommostf = bottommost;
+        ArrayList<LightSource> lights = model.getLightsList();
+        // twice the framerate :)
+        scanlines.stream().parallel().forEach((scanline) -> {
+            for (int j = scanline.from; j < scanline.to; j++) {
+                pixels[scanline.localHeight * width + j] = getTexture().getPixel(
+                        leftmostf, bottommostf, z, j, scanline.localHeight, lights);
+            }
+        });
 
         BufferedImage generatedTexture = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         generatedTexture.getRaster().setDataElements(0, 0, width, height, pixels);
