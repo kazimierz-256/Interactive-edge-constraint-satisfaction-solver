@@ -19,14 +19,19 @@ public class PoliceHeadlights implements ColorAnimator {
 
     public PoliceHeadlights(int seed) {
         this.random = new Random(seed);
-        pace = 1 + .2d * random.nextDouble();
+        pace = 1 + .7d * random.nextDouble();
         offset = 10 * random.nextDouble();
     }
 
     @Override
     public int animate(double t) {
         t = transform(t);
-        if (Math.abs(10 * t % 10) > 5) {
+
+        if (Math.abs(4 * t % 2) > 1) {
+            return 0;
+        }
+
+        if (Math.abs(12 * t % 10) > 5) {
             return 0xff_ff_66_66;
         } else {
             return 0xff_66_66_ff;

@@ -42,7 +42,7 @@ public class Model {
         // gather all MenuItems from all objects in an organized manner
 
         ArrayList<Polygon> touchedConvexPolygons = new ArrayList<>();
-        ArrayList<Polygon> touchedNonConvexPolygons = new ArrayList<>();
+        ArrayList<Polygon> touchedConcavePolygons = new ArrayList<>();
         ArrayList<MenuItem> mainMenuItems = new ArrayList<>();
 
         polygons.forEach((polygon) -> {
@@ -57,14 +57,37 @@ public class Model {
                 if (polygon.isConvex()) {
                     touchedConvexPolygons.add(polygon);
                 } else {
-                    touchedNonConvexPolygons.add(polygon);
+                    touchedConcavePolygons.add(polygon);
                 }
             }
         });
 
         if (touchedConvexPolygons.size() >= 2
-                || (!touchedConvexPolygons.isEmpty() && !touchedNonConvexPolygons.isEmpty())) {
+                || (!touchedConvexPolygons.isEmpty() && !touchedConcavePolygons.isEmpty())) {
 
+            ArrayList<Polygon> combined = new ArrayList<>();
+            combined.addAll(touchedConvexPolygons);
+            combined.addAll(touchedConcavePolygons);
+
+            for (Polygon clippingPolygon : touchedConvexPolygons) {
+
+                for (Polygon clippedPolygon : combined) {
+                    if (clippedPolygon == clippingPolygon) {
+                        continue;
+                    }
+
+                    MenuItem menuItem = new MenuItem(String.format(
+                            "Clip %s using %s", clippedPolygon.toString(), clippingPolygon.toString()
+                    ));
+
+                    menuItem.setOnAction((ActionEvent e) -> {
+                        registerPolygon(clippingPolygon.clip(clippedPolygon));
+                        unregisterPolygon(clippedPolygon);
+                    });
+                    mainMenuItems.add(menuItem);
+
+                }
+            }
             // provide all possible options for clipping the polygons
         }
 
@@ -91,7 +114,7 @@ public class Model {
                                 new Vertex(x + 50, y + 200))
                 );
                 registerPolygon(newPolygon);
-                GK1.model.draw(GK1.viewer);
+//                GK1.model.draw(GK1.viewer);
             });
             mainMenuItems.add(menuItem);
         }

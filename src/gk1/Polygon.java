@@ -31,7 +31,35 @@ public class Polygon implements Drawable {
 
     private Vertex rememberedMovedFirst;
 
-    boolean isConvex() {
+    public boolean isConvex() {
+        Vertex last = vertices.get(vertices.size() - 1);
+        Vertex first = vertices.get(0);
+        Vertex second = vertices.get(1);
+        double dx1 = first.getX() - last.getX();
+        double dy1 = first.getY() - last.getY();
+        double dx2 = second.getX() - first.getX();
+        double dy2 = second.getY() - first.getY();
+        double initialCrossProduct = Math.signum(dx1 * dy2 - dy1 * dx2);
+
+        if (initialCrossProduct == 0) {
+            return false;
+        }
+
+        for (int i = 0, max = vertices.size() - 1; i < max; i++) {
+            last = first;
+            first = second;
+            second = vertices.get((i + 2) % vertices.size());
+
+            dx1 = first.getX() - last.getX();
+            dy1 = first.getY() - last.getY();
+            dx2 = second.getX() - first.getX();
+            dy2 = second.getY() - first.getY();
+
+            if (initialCrossProduct != Math.signum(dx1 * dy2 - dy1 * dx2)) {
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -40,8 +68,83 @@ public class Polygon implements Drawable {
     }
 
     Polygon clip(Polygon polygon) {
-        // current polygon is convex, the polygon in the parameter is not necessarily
-        return null;
+        // assuming the current polygon is convex, the polygon in the parameter is not necessarily
+
+        ArrayList<Vertex>[] inputOutput = new ArrayList[2];
+
+        int input = 0;
+        int output = 1;
+        int pIndex;
+        Boolean isOutside = false;
+        Vertex pp;
+        Vertex p;
+        Vertex inside;
+        Segment e;
+
+        // for i == 0 początkowa iteracja która różni się od właściwej tylko tym, że input jest w tej chwili polygon oraz clipVertexIndex jest równy zeru
+        // ciało pętli jest lepiej wyjaśniane
+        if (polygon.vertices.size() > 0 && vertices.size() > 0) {
+            // odosobniona część pętli gdzie clipVertexIndex == clipPolygon.Length - 1
+            e = new Segment(vertices.get(vertices.size() - 1), vertices.get(0));
+            inputOutput[output] = new ArrayList<>((int) (polygon.vertices.size() * 1.2));
+
+            pp = polygon.vertices.get(polygon.vertices.size() - 1);
+            inside = vertices.get(1);
+            for (pIndex = 0; pIndex < polygon.vertices.size(); pIndex++) {
+                p = polygon.vertices.get(pIndex);
+                if (PolygonAlgorithms.IsSameSide(p, inside, e)) {
+                    isOutside = PolygonAlgorithms.IsOutside(p, inside, e);
+                    if (isOutside && !PolygonAlgorithms.IsSameSide(pp, inside, e)) {
+                        inputOutput[output].add(PolygonAlgorithms.GetIntersectionVertexFast(new Segment(pp, p), e));
+                    }
+
+                    inputOutput[output].add(p);
+                } else if (PolygonAlgorithms.IsSameSideExclusive(pp, inside, e)) {
+                    inputOutput[output].add(PolygonAlgorithms.GetIntersectionVertexFast(new Segment(pp, p), e));
+                }
+
+                pp = p;
+            }
+
+            // pętla właściwa
+            for (int clipVertexIndex = 0; clipVertexIndex < vertices.size() - 1 && inputOutput[output].size() > 0; clipVertexIndex++) {
+                e = new Segment(vertices.get(clipVertexIndex), vertices.get(clipVertexIndex + 1));
+                // zamiana input z output bez zmiennej pomocniczej
+                input = output;
+                output = 1 - input;
+                // zadbałem o zaalokowanie rozsądnie dużej pamięci na wynik
+                inputOutput[output] = new ArrayList<>((int) (inputOutput[input].size() * 1.2));
+
+                pp = inputOutput[input].get(inputOutput[input].size() - 1);
+                // punkt w środku wielokąta wypukłego
+                inside = vertices.get((clipVertexIndex < vertices.size() - 2) ? clipVertexIndex + 2 : 0);
+                for (pIndex = 0; pIndex < inputOutput[input].size(); pIndex++) {
+                    p = inputOutput[input].get(pIndex);
+                    if (PolygonAlgorithms.IsSameSide(p, inside, e)) {
+                        isOutside = PolygonAlgorithms.IsOutside(p, inside, e);
+                        // isOutside gwarantuje, że p nie leży na prostej wyznaczonej przez krawędź e
+                        if (isOutside && !PolygonAlgorithms.IsSameSide(pp, inside, e)) {
+                            inputOutput[output].add(PolygonAlgorithms.GetIntersectionVertexFast(new Segment(pp, p), e));
+                        }
+
+                        inputOutput[output].add(p);
+                    } else if (PolygonAlgorithms.IsSameSideExclusive(pp, inside, e)) {
+                        // gdy pp leży na prostej wyznaczonej przez krawędź e, to już ten punkt musiałem dodać w poprzedniej iteracji w instrukcji warunkowej powyżej
+                        // stąd wyspecjalizowana funkcja IsSameSideExclusive w której sprytnie i szybko sprawdzam tylko > 0 zamiast >= 0
+                        inputOutput[output].add(PolygonAlgorithms.GetIntersectionVertexFast(new Segment(pp, p), e));
+                    }
+
+                    pp = p;
+                }
+            }
+
+        }
+
+        return new Polygon(
+                polygon.name,
+                polygon.automaticRelations,
+                inputOutput[output]
+        );
     }
 
     public Boolean getAutomaticRelations() {
