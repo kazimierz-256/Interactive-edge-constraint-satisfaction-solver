@@ -30,15 +30,15 @@
                                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                             </rowConstraints>
                                             <children>
-                                                <ColorPicker fx:id="lightColour" onAction="#changeColour" GridPane.columnIndex="1" />
-                                                <Label text="Light colour" />
+                                                <ColorPicker fx:id="lightColor" onAction="#changeColor" GridPane.columnIndex="1" />
+                                                <Label text="Light color" />
                                             </children>
                                         </GridPane>
                                     </children>
                                 </VBox>
                             </content>
                         </TitledPane>
-                        <TitledPane prefHeight="200.0" prefWidth="200.0" text="Polygon">
+                        <TitledPane fx:id="polygonTile" disable="true" prefHeight="200.0" prefWidth="200.0" text="Polygon">
                             <content>
                                 <VBox prefHeight="200.0" prefWidth="100.0">
                                     <children>
@@ -55,7 +55,7 @@
                                                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                             </rowConstraints>
                                             <children>
-                                                <Label text="Texture colour" wrapText="true" GridPane.rowIndex="1" />
+                                                <Label text="Texture color" wrapText="true" GridPane.rowIndex="1" />
                                                 <GridPane GridPane.columnIndex="1" GridPane.rowIndex="1">
                                                     <columnConstraints>
                                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -67,7 +67,7 @@
 
                                                     </rowConstraints>
                                                     <children>
-                                                        <RadioButton fx:id="backgroundConstant" mnemonicParsing="false" onAction="#backgroundColorChange" text="Colour">
+                                                        <RadioButton fx:id="backgroundConstant" mnemonicParsing="false" onAction="#backgroundColorChange" text="Color">
                                                             <toggleGroup>
                                                                 <ToggleGroup fx:id="background" />
                                                             </toggleGroup>
@@ -137,12 +137,6 @@
                                                         </RadioButton>
                                                         <RadioButton fx:id="lightVectorAnimated" mnemonicParsing="false" onAction="#lightVectorAnimated" selected="true" text="Animated" toggleGroup="$lightVector" GridPane.rowIndex="1" />
                                                         <Label text="[0, 0, 1]" GridPane.columnIndex="1" />
-                                                        <SplitMenuButton fx:id="lightVectorAnimationType" disable="${lightVectorConstant.selected}" mnemonicParsing="false" onAction="#lightVectorAnimated" text="Animation" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                                            <items>
-                                                                <MenuItem mnemonicParsing="false" text="Circulating" />
-                                                                <MenuItem mnemonicParsing="false" text="Complex trajectory" />
-                                                            </items>
-                                                        </SplitMenuButton>
                                                     </children>
                                                 </GridPane>
                                                 <Label text="Automatic snap" wrapText="true" />

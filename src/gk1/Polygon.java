@@ -7,6 +7,7 @@ package gk1;
 
 import static gk1.GK1.model;
 import gk1.areas.Area;
+import gk1.textures.ArgbHelper;
 import gk1.textures.Texture;
 import java.awt.image.BufferedImage;
 import static java.lang.Math.sqrt;
@@ -15,10 +16,12 @@ import java.util.Collection;
 import java.util.LinkedList;
 import javafx.event.ActionEvent;
 import javafx.scene.Cursor;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
 
 /**
  *
@@ -240,9 +243,12 @@ public class Polygon implements Drawable {
         ArrayList<LightSource> lights = new ArrayList<>();
 
         if (isArtificialLight) {
+            Color valude = ((ColorPicker) GK1.accessScene.lookup("#lightColor")).getValue();
             lights.add(new LightSource(
                     new Vertex(0, 0, 100000),
-                    0xff_ff_ff_ff,
+                    ArgbHelper.fromColor(
+                            valude
+                    ),
                     2d * Math.log(100000 * 100000)
             ));
         } else {

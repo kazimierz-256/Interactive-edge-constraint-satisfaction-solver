@@ -303,11 +303,11 @@ public class Viewer {
     private final Object lock = new Object();
 
     void drawModel(Model model) {
-        if (isDrawing) {
+        if (isCurrentlyDrawing()) {
             return;
         } else {
             synchronized (lock) {
-                if (isDrawing) {
+                if (isCurrentlyDrawing()) {
                     return;
                 } else {
                     isDrawing = true;
@@ -326,6 +326,10 @@ public class Viewer {
         graphicsContext.strokeText(String.format("%3.2f fps", fps), 10, 50);
 
         isDrawing = false;
+    }
+
+    public boolean isCurrentlyDrawing() {
+        return isDrawing;
     }
 
 }

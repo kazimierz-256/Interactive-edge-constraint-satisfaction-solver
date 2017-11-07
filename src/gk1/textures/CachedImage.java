@@ -83,15 +83,15 @@ public class CachedImage {
         this.method = fillMethod.repeat;
     }
 
-    public CachedImage(int colour) {
-        CreateSinglePixel(colour);
+    public CachedImage(int color) {
+        CreateSinglePixel(color);
     }
 
-    private void CreateSinglePixel(int colour) {
+    private void CreateSinglePixel(int color) {
         type = textureType.color;
         width = height = 1;
 //        image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-        pixels = new int[]{colour};
+        pixels = new int[]{color};
         method = fillMethod.repeat;
     }
 

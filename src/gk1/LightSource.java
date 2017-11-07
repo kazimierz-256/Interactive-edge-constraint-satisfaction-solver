@@ -82,7 +82,7 @@ public class LightSource implements Drawable {
         this.position = position;
     }
 
-    public int getLightColour() {
+    public int getLightColor() {
         return light;
     }
 

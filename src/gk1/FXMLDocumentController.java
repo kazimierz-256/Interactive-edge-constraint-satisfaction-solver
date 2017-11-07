@@ -38,7 +38,7 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private ToggleButton automaticRelations;
     @FXML
-    private ColorPicker lightColour;
+    private ColorPicker lightColor;
     @FXML
     private ColorPicker backgroundColor;
     @FXML
@@ -48,7 +48,7 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private TextField normalURL;
     @FXML
-    private SplitMenuButton lightVectorAnimationType;
+    private TitledPane polygonTile;
 
     @FXML
     public void lightVectorDefault(Event event) {
@@ -127,15 +127,15 @@ public class FXMLDocumentController implements Initializable {
     }
 
     @FXML
-    public void changeColour(Event event) {
-        int color = ArgbHelper.fromColor(lightColour.getValue());
+    public void changeColor(Event event) {
+        int color = ArgbHelper.fromColor(lightColor.getValue());
         GK1.model.getLightsList().stream().forEach((light) -> {
             light.setLight(color);
         });
     }
 
     @FXML
-    private void toggleAutomaticRelations() {
+    private void toggleAutomaticRelations(Event event) {
         if (GK1.model.activePolygon == null) {
             return;
         }
@@ -240,9 +240,12 @@ public class FXMLDocumentController implements Initializable {
 
         long startedTime = System.currentTimeMillis();
 
-        Timeline fiveSecondsWonder = new Timeline(
+        Timeline mainAnimationTimeline = new Timeline(
                 new KeyFrame(javafx.util.Duration.millis(64), (ActionEvent event) -> {
 
+//                    if (GK1.viewer.isCurrentlyDrawing()) {
+//                        return;
+//                    }
                     // animate the light source
                     double t = (System.currentTimeMillis() - startedTime) / 1000d;
 
@@ -254,8 +257,8 @@ public class FXMLDocumentController implements Initializable {
                     GK1.viewer.drawModel(GK1.model);
                 }));
 
-        fiveSecondsWonder.setCycleCount(Timeline.INDEFINITE);
+        mainAnimationTimeline.setCycleCount(Timeline.INDEFINITE);
 
-        fiveSecondsWonder.play();
+        mainAnimationTimeline.play();
     }
 }

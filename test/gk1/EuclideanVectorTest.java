@@ -16,9 +16,9 @@ import org.junit.Test;
  *
  * @author kazimierz
  */
-public class VectorTest extends TestCase {
+public class EuclideanVectorTest extends TestCase {
 
-    public VectorTest() {
+    public EuclideanVectorTest() {
     }
 
     @BeforeClass
@@ -38,24 +38,24 @@ public class VectorTest extends TestCase {
     }
 
     /**
-     * Test of normalize method, of class Vector.
+     * Test of normalize method, of class EuclideanVector.
      */
     @Test
     public void testNormalize() {
         System.out.println("normalize");
-        Vector instance = null;
+        EuclideanVector instance = null;
         // TODO review the generated test code and remove the default call to fail.
 
 //        fail("The test case is a prototype.");
     }
 
     /**
-     * Test of getLength method, of class Vector.
+     * Test of getLength method, of class EuclideanVector.
      */
     @Test
     public void testGetLength() {
         System.out.println("getLength");
-        Vector instance = null;
+        EuclideanVector instance = null;
         double expResult = 0.0;
         double result = instance.getLength();
         assertEquals(expResult, result, 0.0);
@@ -64,12 +64,12 @@ public class VectorTest extends TestCase {
     }
 
     /**
-     * Test of getSquareLength method, of class Vector.
+     * Test of getSquareLength method, of class EuclideanVector.
      */
     @Test
     public void testGetSquareLength() {
         System.out.println("getSquareLength");
-        Vector instance = null;
+        EuclideanVector instance = null;
         double expResult = 0.0;
         double result = instance.getSquareLength();
         assertEquals(expResult, result, 0.0);
@@ -78,52 +78,52 @@ public class VectorTest extends TestCase {
     }
 
     /**
-     * Test of add method, of class Vector.
+     * Test of add method, of class EuclideanVector.
      */
     @Test
     public void testAdd() {
         System.out.println("add");
-        Vector vector = null;
-        Vector instance = null;
+        EuclideanVector vector = null;
+        EuclideanVector instance = null;
         instance.add(vector);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
     /**
-     * Test of minus method, of class Vector.
+     * Test of minus method, of class EuclideanVector.
      */
     @Test
     public void testMinus() {
         System.out.println("minus");
-        Vector vector = null;
-        Vector instance = null;
+        EuclideanVector vector = null;
+        EuclideanVector instance = null;
         instance.minus(vector);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
     /**
-     * Test of scale method, of class Vector.
+     * Test of scale method, of class EuclideanVector.
      */
     @Test
     public void testScale() {
         System.out.println("scale");
         double scale = 0.0;
-        Vector instance = null;
+        EuclideanVector instance = null;
         instance.scale(scale);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
     /**
-     * Test of dotProductNormalized method, of class Vector.
+     * Test of dotProductNormalized method, of class EuclideanVector.
      */
     @Test
     public void testDotProductNormalized() {
         System.out.println("dotProductNormalized");
-        Vector vector = null;
-        Vector instance = null;
+        EuclideanVector vector = null;
+        EuclideanVector instance = null;
         double expResult = 0.0;
         double result = instance.dotProductNormalized(vector);
         assertEquals(expResult, result, 0.0);
@@ -132,26 +132,26 @@ public class VectorTest extends TestCase {
     }
 
     /**
-     * Test of fromVertex method, of class Vector.
+     * Test of fromVertex method, of class EuclideanVector.
      */
     @Test
     public void testFromVertex() {
         System.out.println("fromVertex");
         Vertex vertex = null;
-        Vector expResult = null;
-        Vector result = Vector.fromVertex(vertex);
+        EuclideanVector expResult = null;
+        EuclideanVector result = EuclideanVector.fromVertex(vertex);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
 
     /**
-     * Test of normalizeZ method, of class Vector.
+     * Test of normalizeZ method, of class EuclideanVector.
      */
     @Test
     public void testNormalizeZ() {
         System.out.println("normalizeZ");
-        Vector instance = null;
+        EuclideanVector instance = null;
         instance.normalizeZ();
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");

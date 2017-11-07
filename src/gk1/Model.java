@@ -153,6 +153,7 @@ public class Model {
 
     public void markPolygonAsActive(Polygon polygon) {
         activePolygon = polygon;
+        ((TitledPane) GK1.accessScene.lookup("#polygonTile")).setDisable(false);
         ((ToggleButton) GK1.accessScene.lookup("#automaticRelations")).setSelected(
                 polygon.getAutomaticRelations()
         );

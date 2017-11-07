@@ -11,13 +11,13 @@ import static java.lang.Math.sqrt;
  *
  * @author kazimierz
  */
-public class Vector {
+public class EuclideanVector {
 
     public double x = 0;
     public double y = 0;
     public double z = 0;
 
-    public Vector(double x, double y, double z) {
+    public EuclideanVector(double x, double y, double z) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -38,13 +38,13 @@ public class Vector {
         return x * x + y * y + z * z;
     }
 
-    public void add(Vector vector) {
+    public void add(EuclideanVector vector) {
         x += vector.x;
         y += vector.y;
         z += vector.z;
     }
 
-    public void minus(Vector vector) {
+    public void minus(EuclideanVector vector) {
         x -= vector.x;
         y -= vector.y;
         z -= vector.z;
@@ -56,14 +56,14 @@ public class Vector {
         z *= scale;
     }
 
-    public double dotProductNormalized(Vector vector) {
+    public double dotProductNormalized(EuclideanVector vector) {
         double productOfSquareLengths = this.getSquareLength() * vector.getSquareLength();
         return (this.x * vector.x + this.y * vector.y + this.z * vector.z)
                 / sqrt(productOfSquareLengths);
     }
 
-    public static Vector fromVertex(Vertex vertex) {
-        return new Vector(vertex.getX(), vertex.getY(), vertex.getZ());
+    public static EuclideanVector fromVertex(Vertex vertex) {
+        return new EuclideanVector(vertex.getX(), vertex.getY(), vertex.getZ());
     }
 
     public void normalizeZ() {

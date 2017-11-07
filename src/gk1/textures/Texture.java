@@ -5,8 +5,8 @@
  */
 package gk1.textures;
 
+import gk1.EuclideanVector;
 import gk1.LightSource;
-import gk1.Vector;
 import static java.lang.Math.floor;
 import java.util.ArrayList;
 
@@ -57,13 +57,13 @@ public class Texture {
         double pixelComputedHeight = ArgbHelper.getBlue(heights.getPixel(x, y)) * heightScale;
 
         // -y since the coordinates are flipped
-        Vector N = new Vector((ArgbHelper.getRed(normalPixel) - 127) / 128d,
+        EuclideanVector N = new EuclideanVector((ArgbHelper.getRed(normalPixel) - 127) / 128d,
                 -(ArgbHelper.getGreen(normalPixel) - 127) / 128d,
                 ArgbHelper.getBlue(normalPixel) / 255d);
 
-        Vector T = new Vector(1d, 0d, -N.x);
+        EuclideanVector T = new EuclideanVector(1d, 0d, -N.x);
         T.scale(ArgbHelper.getBlue(heights.getPixel(x + 1, y)) * heightScale - pixelComputedHeight);
-        Vector B = new Vector(0d, 1d, -N.y);
+        EuclideanVector B = new EuclideanVector(0d, 1d, -N.y);
         B.scale(ArgbHelper.getBlue(heights.getPixel(x, y + 1)) * heightScale - pixelComputedHeight);
 
         N.add(T);
@@ -73,10 +73,10 @@ public class Texture {
         double resultingBlue = 0;
 
         for (LightSource light : lights) {
-            int lightColour = light.getLightColour();
+            int lightColor = light.getLightColor();
 
-            Vector L = Vector.fromVertex(light.getPosition());
-            L.minus(new Vector(leftmost + x, bottommost + y, z + pixelComputedHeight));
+            EuclideanVector L = EuclideanVector.fromVertex(light.getPosition());
+            L.minus(new EuclideanVector(leftmost + x, bottommost + y, z + pixelComputedHeight));
             double dotProduct = N.dotProductNormalized(L);
 
             // personal touch :)
@@ -85,9 +85,9 @@ public class Texture {
             dotProduct *= light.getIntensity() / Math.max(1d, Math.log(L.getSquareLength()));
 
             if (dotProduct > 0d) {
-                resultingRed += (dotProduct * ArgbHelper.getRed(lightColour)) * ArgbHelper.getRed(texturePixel);
-                resultingGreen += (dotProduct * ArgbHelper.getGreen(lightColour)) * ArgbHelper.getGreen(texturePixel);
-                resultingBlue += (dotProduct * ArgbHelper.getBlue(lightColour)) * ArgbHelper.getBlue(texturePixel);
+                resultingRed += (dotProduct * ArgbHelper.getRed(lightColor)) * ArgbHelper.getRed(texturePixel);
+                resultingGreen += (dotProduct * ArgbHelper.getGreen(lightColor)) * ArgbHelper.getGreen(texturePixel);
+                resultingBlue += (dotProduct * ArgbHelper.getBlue(lightColor)) * ArgbHelper.getBlue(texturePixel);
             }
         }
 
