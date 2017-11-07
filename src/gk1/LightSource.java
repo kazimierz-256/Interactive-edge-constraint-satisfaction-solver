@@ -7,30 +7,27 @@ package gk1;
 
 import animation.ColorAnimator;
 import animation.PositionAnimator;
-import java.util.ArrayList;
-import javafx.scene.control.MenuItem;
-import javafx.scene.input.MouseEvent;
 
 /**
  *
  * @author kazimierz
  */
-public class LightSource implements Drawable {
+public class LightSource {
 
-    private Vertex position = new Vertex(0, 0);
+    private Vertex position;
     private int light = 0xff_ff_ff_ff;
     private double intensity = 16d;
     private PositionAnimator positionAnimator;
     private ColorAnimator colorAnimator;
 
-    LightSource(Vertex vertex, int i, double d, PositionAnimator positionAnimator) {
+    LightSource(Vertex position, int light, double intensity, PositionAnimator positionAnimator) {
         this.position = position;
         this.light = light;
         this.intensity = intensity;
         this.positionAnimator = positionAnimator;
     }
 
-    LightSource(Vertex vertex, int i, double d, PositionAnimator positionAnimator, ColorAnimator colorAnimator) {
+    LightSource(Vertex position, int light, double intensity, PositionAnimator positionAnimator, ColorAnimator colorAnimator) {
         this.position = position;
         this.light = light;
         this.intensity = intensity;
@@ -38,7 +35,6 @@ public class LightSource implements Drawable {
         this.colorAnimator = colorAnimator;
     }
 
-    @Override
     public double getZ() {
         return getPosition().getZ();
     }
@@ -52,26 +48,6 @@ public class LightSource implements Drawable {
         this.position = position;
         this.light = light;
         this.intensity = intensity;
-    }
-
-    @Override
-    public Reaction mouseMoved(MouseEvent mouseEvent) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Reaction mousePressed(MouseEvent mouseEvent) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Reaction mouseReleased(MouseEvent mouseEvent) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public ArrayList<MenuItem> buildContextMenu(MouseEvent event) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     public Vertex getPosition() {
@@ -90,7 +66,6 @@ public class LightSource implements Drawable {
         this.light = light;
     }
 
-    @Override
     public void draw(Viewer viewer, Model context) {
         // just draw a normal single vertex
         viewer.draw(this);
