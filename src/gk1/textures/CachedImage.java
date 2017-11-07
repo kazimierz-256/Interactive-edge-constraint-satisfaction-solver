@@ -96,13 +96,13 @@ public class CachedImage {
     }
 
     public int getPixel(int x, int y) {
-        switch (method) {
-            case repeat:
+        // I hope this is much faster than the switch statement
+        if (method == fillMethod.repeat) {
 //                    return image.getRaster().getDataBuffer().getElem(element);
 //                return image.getRGB(x % image.getWidth(), y % image.getHeight());
-                return pixels[(y % height) * width + (x % width)];
-            default:
-                return 0;
+            return pixels[(y % height) * width + (x % width)];
+        } else {
+            return 0;
         }
     }
 }

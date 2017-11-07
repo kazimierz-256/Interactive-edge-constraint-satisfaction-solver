@@ -28,7 +28,7 @@ public class PoliceHeadlights implements ColorAnimator {
         t = transform(t);
 
         if (Math.abs(4 * t % 2) > 1) {
-            return 0;
+            return 0xff_55_55_55;
         }
 
         if (Math.abs(12 * t % 10) > 5) {

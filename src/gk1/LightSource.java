@@ -15,7 +15,7 @@ import animation.PositionAnimator;
 public class LightSource {
 
     private Vertex position;
-    private int light = 0xff_ff_ff_ff;
+    private int light;
     private double intensity = 16d;
     private PositionAnimator positionAnimator;
     private ColorAnimator colorAnimator;

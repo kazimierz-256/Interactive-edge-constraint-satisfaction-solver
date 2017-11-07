@@ -260,7 +260,7 @@ public class Viewer {
             graphicsContext.strokeOval(x - w / 2, y - h / 2, w, h);
         }
 
-        graphicsContext.strokeText(vertex.toString(), x, y - 10);
+//        graphicsContext.strokeText(vertex.toString(), x, y - 10);
     }
 
 //    public static BufferedImage getImageFromArray(int[] pixels, int width, int height) {

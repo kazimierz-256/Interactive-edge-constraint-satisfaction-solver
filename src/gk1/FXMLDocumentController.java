@@ -241,20 +241,21 @@ public class FXMLDocumentController implements Initializable {
         long startedTime = System.currentTimeMillis();
 
         Timeline mainAnimationTimeline = new Timeline(
-                new KeyFrame(javafx.util.Duration.millis(64), (ActionEvent event) -> {
+                new KeyFrame(javafx.util.Duration.millis(50), (ActionEvent event) -> {
 
 //                    if (GK1.viewer.isCurrentlyDrawing()) {
 //                        return;
 //                    }
                     // animate the light source
+                    // draw the actual model
+                    GK1.viewer.drawModel(GK1.model);
+
                     double t = (System.currentTimeMillis() - startedTime) / 1000d;
 
                     GK1.model.getLightsList().forEach(light -> {
                         light.animate(t);
                     });
 
-                    // draw the actual model
-                    GK1.viewer.drawModel(GK1.model);
                 }));
 
         mainAnimationTimeline.setCycleCount(Timeline.INDEFINITE);
