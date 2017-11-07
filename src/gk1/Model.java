@@ -136,6 +136,10 @@ public class Model {
     }
 
     public void unregisterPolygon(Polygon polygon) {
+        if (activePolygon == polygon) {
+            ((TitledPane) GK1.accessScene.lookup("#polygonTile")).setDisable(true);
+            activePolygon = null;
+        }
         polygons.remove(polygon);
     }
 
