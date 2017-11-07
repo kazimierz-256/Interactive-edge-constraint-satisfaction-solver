@@ -17,7 +17,7 @@ import javafx.scene.input.MouseEvent;
  */
 public class LightSource implements Drawable {
 
-    private Vertex position;
+    private Vertex position = new Vertex(0, 0);
     private int light = 0xff_ff_ff_ff;
     private double intensity = 16d;
     private PositionAnimator positionAnimator;
@@ -105,11 +105,11 @@ public class LightSource implements Drawable {
     }
 
     void animate(double t) {
-        if (getColorAnimator() != null) {
-            light = getColorAnimator().animate(t);
+        if (colorAnimator != null) {
+            light = colorAnimator.animate(t);
         }
-        if (getPositionAnimator() != null) {
-            position = getPositionAnimator().animate(t);
+        if (positionAnimator != null) {
+            position = positionAnimator.animate(t);
         }
     }
 

@@ -231,11 +231,11 @@ public class FXMLDocumentController implements Initializable {
         );
 
         GK1.model = new Model();
-        GK1.model.registerPolygon(newPolygon);
         GK1.model.registerLight(light1);
         GK1.model.registerLight(light2);
         GK1.model.registerLight(light3);
         GK1.model.registerLight(mouseLight);
+        GK1.model.registerPolygon(newPolygon);
         GK1.viewer = new Viewer(drawing, 600, 600);
 
         long startedTime = System.currentTimeMillis();
