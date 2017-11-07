@@ -14,10 +14,18 @@ public class ActiveEdge {
     public double y_max;
     public double x;
     public double m_inverse;
+    public double x_max;
 
     public ActiveEdge(double y_max, double x, double m_inverse) {
         this.y_max = y_max;
         this.x = x;
         this.m_inverse = m_inverse;
+    }
+
+    ActiveEdge(int y_max, int x, double m_inverse, double x_max) {
+        this.y_max = y_max;
+        this.x = x;
+        this.m_inverse = m_inverse;
+        this.x_max = x_max;
     }
 }

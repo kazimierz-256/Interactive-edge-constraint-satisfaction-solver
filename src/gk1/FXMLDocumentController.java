@@ -9,6 +9,7 @@ import animation.Helicopter;
 import animation.PoliceHeadlights;
 import gk1.textures.ArgbHelper;
 import gk1.textures.CachedImage;
+import gk1.textures.Texture;
 import java.net.URL;
 import java.util.*;
 import javafx.animation.*;
@@ -204,7 +205,8 @@ public class FXMLDocumentController implements Initializable {
                         new Vertex(100, 100, true),
                         new Vertex(650, 50),
                         new Vertex(600, 500),
-                        new Vertex(150, 550))
+                        new Vertex(150, 550)),
+                Texture.getDefault()
         );
 
         LightSource light1 = new LightSource(

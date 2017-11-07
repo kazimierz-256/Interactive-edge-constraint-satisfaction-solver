@@ -21,17 +21,17 @@ public class Texture {
     private CachedImage heights;
     private static final double heightScale = 1d / 128;
 
-    public Texture() {
+    public static Texture getDefault() {
 // pizza https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Pepperoni_pizza.jpg/320px-Pepperoni_pizza.jpg
 //https://upload.wikimedia.org/wikipedia/commons/4/43/Radiosity-yes.jpg
 //https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Painters_problem.svg/340px-Painters_problem.svg.png
         // pizza
-        background = new CachedImage(
+        CachedImage background = new CachedImage(
                 "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Pepperoni_pizza.jpg/640px-Pepperoni_pizza.jpg"
         );
         //https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Normal_map_example_-_Map.png/600px-Normal_map_example_-_Map.png
         // abstract shapes
-        normals = new CachedImage(
+        CachedImage normals = new CachedImage(
                 "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Normal_map_example_-_Map.png/480px-Normal_map_example_-_Map.png"
         );
         // earth
@@ -39,9 +39,13 @@ public class Texture {
         // https://upload.wikimedia.org/wikipedia/commons/5/57/Heightmap.png
         // https://upload.wikimedia.org/wikipedia/commons/c/c3/Heightmap_of_Trencrom_Hill.png
         // https://www.jpl.nasa.gov/spaceimages/images/largesize/PIA03378_hires.jpg
-        heights = new CachedImage(
+        CachedImage heights = new CachedImage(
                 "https://www.jpl.nasa.gov/spaceimages/images/largesize/PIA03378_hires.jpg"
         );
+        return new Texture(background, normals, heights);
+    }
+
+    public Texture() {
     }
 
     public Texture(CachedImage texture, CachedImage normals, CachedImage heights) {

@@ -143,7 +143,8 @@ public class Polygon implements Drawable {
         return new Polygon(
                 polygon.name,
                 polygon.automaticRelations,
-                inputOutput[output]
+                inputOutput[output],
+                polygon.getTexture()
         );
     }
 
@@ -182,7 +183,7 @@ public class Polygon implements Drawable {
     }
 
     private boolean isArtificialLight = false;
-    private Texture texture = new Texture();
+    private Texture texture;
     private boolean automaticRelations = false;
     private MoveEntity moveEntity;
 //    private Polygon backup;
@@ -271,7 +272,10 @@ public class Polygon implements Drawable {
         for (int i = 0, max = segments.size(); i < max; i++) {
             lower = segments.get(i).getBeginning();
             upper = segments.get(i).getEnd();
-            if (lower.getY() > upper.getY()) {
+
+            if (upper.getYint() == lower.getYint()) {
+                continue;
+            } else if (lower.getY() > upper.getY()) {
                 tmp = lower;
                 lower = upper;
                 upper = tmp;
@@ -286,7 +290,13 @@ public class Polygon implements Drawable {
                     / (upper.getYint() - lower.getYint());
 
             edgeTable[indexAboveBottommost].add(
-                    new ActiveEdge(upper.getYint(), lower.getXint(), m_inverse));
+                    new ActiveEdge(
+                            upper.getYint(),
+                            lower.getXint(),
+                            m_inverse,
+                            Math.max(upper.getX(), lower.getX())
+                    )
+            );
         }
 
         LinkedList<ActiveEdge> activeEdges = new LinkedList<>();
@@ -346,11 +356,11 @@ public class Polygon implements Drawable {
         ArrayList<LightSource> lights = new ArrayList<>();
 
         if (isArtificialLight) {
-            Color valude = ((ColorPicker) GK1.accessScene.lookup("#lightColor")).getValue();
+            Color artificialLightColor = ((ColorPicker) GK1.accessScene.lookup("#lightColor")).getValue();
             lights.add(new LightSource(
                     new Vertex(0, 0, 100000),
                     ArgbHelper.fromColor(
-                            valude
+                            artificialLightColor
                     ),
                     2d * Math.log(100000 * 100000)
             ));
@@ -373,15 +383,16 @@ public class Polygon implements Drawable {
         viewer.drawImage(generatedTexture, leftmost, bottommost, width, height);
     }
 
-    public Polygon(String name, Boolean automaticRelations, Collection<Vertex> vertices) {
+    public Polygon(String name, Boolean automaticRelations, Collection<Vertex> vertices, Texture texture) {
         if (vertices.size() < 3) {
             //throw new Exception("A polygon has to have at least three vertices.");
             return;
         }
         this.name = name;
+        this.automaticRelations = automaticRelations;
+        this.texture = texture;
         this.vertices = new ArrayList<>();
         this.segments = new ArrayList<>();
-        this.automaticRelations = automaticRelations;
 
         vertices.forEach((vertex) -> {
             Vertex cloned = vertex.cloneWithoutSegments();

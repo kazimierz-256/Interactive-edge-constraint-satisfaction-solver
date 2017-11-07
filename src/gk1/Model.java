@@ -111,7 +111,8 @@ public class Model {
                         Arrays.asList(
                                 new Vertex(x, y, true),
                                 new Vertex(x + 200, y + 50),
-                                new Vertex(x + 50, y + 200))
+                                new Vertex(x + 50, y + 200)),
+                        Texture.getDefault()
                 );
                 registerPolygon(newPolygon);
 //                GK1.model.draw(GK1.viewer);
