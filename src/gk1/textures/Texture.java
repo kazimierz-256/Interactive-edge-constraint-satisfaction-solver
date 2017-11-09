@@ -40,12 +40,9 @@ public class Texture {
         // https://upload.wikimedia.org/wikipedia/commons/c/c3/Heightmap_of_Trencrom_Hill.png
         // https://www.jpl.nasa.gov/spaceimages/images/largesize/PIA03378_hires.jpg
         CachedImage heights = new CachedImage(
-                "https://www.jpl.nasa.gov/spaceimages/images/largesize/PIA03378_hires.jpg"
+                "https://www.jpl.nasa.gov/spaceimages/images/wallpaper/PIA03378-800x600.jpg"
         );
         return new Texture(background, normals, heights);
-    }
-
-    public Texture() {
     }
 
     public Texture(CachedImage texture, CachedImage normals, CachedImage heights) {
@@ -64,13 +61,15 @@ public class Texture {
 
         // -y since the coordinates are flipped
         EuclideanVector N = new EuclideanVector(
-                (ArgbHelper.getRed(normalPixel) - 127) / 128d,
+                (127 - ArgbHelper.getRed(normalPixel)) / 128d,
                 (ArgbHelper.getGreen(normalPixel) - 127) / 128d,
                 ArgbHelper.getBlue(normalPixel) / 255d
         );
 
         EuclideanVector T = new EuclideanVector(dxHeight, 0d, -N.x * dxHeight);
         EuclideanVector B = new EuclideanVector(0d, dyHeight, -N.y * dyHeight);
+
+        N.normalizeZ();
 
         N.add(T);
         N.add(B);
@@ -82,11 +81,9 @@ public class Texture {
         for (LightSource light : lights) {
             int lightColor = light.getLightColor();
 
-//            EuclideanVector L = EuclideanVector.fromVertex(light.getPosition());
-//            L.minus(new EuclideanVector(leftmost + x, bottommost + y, z + pixelComputedHeight));
             EuclideanVector L = new EuclideanVector(
-                    light.getPosition().getX() - (leftmost + x),
-                    -(light.getPosition().getY() - (bottommost + y)),
+                    (leftmost + x) - light.getPosition().getX(),
+                    (bottommost + y) - light.getPosition().getY(),
                     light.getPosition().getZ() - (z + pixelComputedHeight)
             );
             double dotProduct = N.dotProductNormalized(L);
