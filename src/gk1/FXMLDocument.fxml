@@ -15,7 +15,7 @@
     <children>
         <SplitPane dividerPositions="0.312625250501002" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
             <items>
-                <Accordion expandedPane="$lightTile">
+                <Accordion fx:id="mainAccordion" expandedPane="$lightTile">
                     <panes>
                         <TitledPane fx:id="lightTile" animated="false" text="Light">
                             <content>

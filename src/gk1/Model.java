@@ -232,6 +232,11 @@ public class Model {
             );
             ((TextField) GK1.accessScene.lookup("#displacementURL")).setText(displacement.getUrl());
         }
+
+        ((Accordion) GK1.accessScene.lookup("#mainAccordion")).setExpandedPane(
+                (TitledPane) GK1.accessScene.lookup("#polygonTile")
+        );
+
     }
 
 }
