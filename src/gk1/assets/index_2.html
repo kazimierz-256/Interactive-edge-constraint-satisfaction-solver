@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>
+            Grafika komputerowa - laboratorium 2 - dokumentacja
+        </title>
+        <meta charset="UTF-8">
+        <link href="https://fonts.googleapis.com/css?family=PT+Sans+Narrow:400,700|PT+Sans:400,400i,700,700i|PT+Serif:400,400i,700,700i&amp;subset=latin-ext"
+              rel="stylesheet">
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-size: 1em;
+                font-family: 'PT Serif';
+                padding: 1em 1em 0 1em;
+            }
+            /*ul.delim li:nth-child(n+2)::before {
+                content: "• ";
+                opacity: .3;
+                padding: 0 .5em;
+            }*/
+            /*ul.delim li {
+                display: inline;
+                margin: none;
+            }*/
+        </style>
+        <style>
+            main {
+                width: 50em;
+                margin: 0 auto;
+                overflow: hidden;
+            }
+
+            main a {
+                text-decoration: none;
+                /*color: hsl(208, 73%, 32%);*/
+                color: black;
+            }
+        </style>
+        <style>
+            article{
+                width:30em;
+                margin: 0 auto;
+            }
+            article header {
+                text-align: center;
+                margin: 8em 0;
+            }
+
+            *[class~=breakAfter]{
+
+                page-break-after: always;
+            }
+            *[class~=breakBefore]{
+
+                page-break-before:  always;
+            }
+
+            h1,
+            h2,
+            h3,h4 {
+                font-weight: normal;
+                margin: 1em 0;
+            }
+
+            h1 {
+                font-size: 2.2em;
+            }
+
+            h2 {
+                font-size: 1.4em;
+            }
+            @media not print{
+                * {
+                    background: rgba(0, 0, 0, .07);
+                }
+            }
+
+            section, p, ul, ol{
+                margin-bottom: 1em;
+            }
+            img{
+                max-width: 100%;
+            }
+            img.extended{
+                max-width:200%;
+                width: 160%;
+                margin: 0 -30%;
+            }
+            ul, ol{
+                margin-left: 2em;
+            }
+            *[class~=footnote]{
+                position: relative;
+                top: -3em;
+                font-size:80%;
+                text-align:center;
+            }
+        </style>
+    </head>
+
+    <body>
+        <article>
+            <header class="breakAfter">
+                <h1>Grafika Komputerowa</h1>
+                <h2>Laboratorium II</h2>
+                <h3>Kazimierz Wojciechowski</h3>
+                <h4>16.11.2017</h4>
+            </header>
+            <section>
+                <h1>Klawiszologia</h1>
+                <p></p>
+                <ul>
+                    <li>Polecenia dodawania, usuwania oraz obcinania wielokątów znajdują się w menu kontekstowym</li>
+                    <li>Aby przemieścić wielokąt wystarczy przytrzymać go, przesunąć oraz upuścić w upodobanym miejscu</li>
+                    <li>Aby dokonać obcięcia jednego wielokąta za pomocą innego, wypukłego wielokąta wystarczy kliknąć w okolice
+                        przecięcia obu wielokątów oraz odnaleźć odpowiednie polecenie w menu kontekstowym</li>
+                    <li>Aby zwiększyć lub zmniejszyć wysokość światła zawisłego nad kursorem wystarczy przewinąć myszką w górę/dół</li>
+                </ul>
+            </section>
+        </article><script type="text/x-mathjax-config">
+            MathJax.Hub.Config({
+            tex2jax: {
+            inlineMath: [ ["\\(","\\)"] ],
+            processEscapes: true
+            }
+            });
+        </script>
+        <script type="text/javascript" async
+                src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+    </body>
+</html>

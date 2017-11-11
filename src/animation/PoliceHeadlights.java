@@ -26,16 +26,18 @@ public class PoliceHeadlights implements ColorAnimator {
     @Override
     public int animate(double t) {
         t = transform(t);
+        t %= 2;
+        t = Math.abs(t);
 
-        if (Math.abs(4 * t % 2) > 1) {
-            return 0xff_55_55_55;
+        if (t >= 1.9 || (t >= .9 && t < 1)) {
+            return 0;
         }
 
-        if (Math.abs(12 * t % 10) > 5) {
-            return 0xff_ff_66_66;
-        } else {
-            return 0xff_66_66_ff;
+        if ((4 * t) % 2 >= 1) {
+            return t > 1 ? 0xff_aa_22_22 : 0xff_22_22_aa;
         }
+
+        return t > 1 ? 0xff_ff_66_66 : 0xff_66_66_ff;
     }
 
     private double transform(double t) {

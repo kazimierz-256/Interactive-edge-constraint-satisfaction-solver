@@ -56,7 +56,9 @@ public class FXMLDocumentController implements Initializable {
 
     @FXML
     public void mouseScroll(ScrollEvent event) {
-        mouseLight.setZ(mouseLight.getZ() * (1 + event.getDeltaY() / 64));
+        mouseLight.setZ(mouseLight.getZ()
+                + Math.sqrt(Math.abs(mouseLight.getZ())) * (event.getDeltaY() / 16)
+        );
     }
 
     @FXML
@@ -232,18 +234,9 @@ public class FXMLDocumentController implements Initializable {
                 new Helicopter(456)
         );
 
-        LightSource light3 = new LightSource(
-                new Vertex(0, 0),
-                0,
-                4d,
-                new Helicopter(1293),
-                new PoliceHeadlights(23)
-        );
-
         GK1.model = new Model();
         GK1.model.registerLight(light1);
         GK1.model.registerLight(light2);
-        GK1.model.registerLight(light3);
         GK1.model.registerLight(mouseLight);
         GK1.model.registerPolygon(newPolygon);
         GK1.viewer = new Viewer(drawing, 600, 600);
