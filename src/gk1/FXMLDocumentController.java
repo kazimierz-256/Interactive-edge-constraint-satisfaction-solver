@@ -30,8 +30,11 @@ public class FXMLDocumentController implements Initializable {
 
     private ContextMenu contextMenu = new ContextMenu();
     private LightSource mouseLight = new LightSource(
-            new Vertex(0, 0),
-            0xff_ff_ff_ff
+            new Vertex(0, 0, 50),
+            0xff_ff_ff_ff,
+            16d,
+            null,
+            null
     );
 
     @FXML
@@ -50,6 +53,11 @@ public class FXMLDocumentController implements Initializable {
     private TextField normalURL;
     @FXML
     private TitledPane polygonTile;
+
+    @FXML
+    public void mouseScroll(ScrollEvent event) {
+        mouseLight.setZ(mouseLight.getZ() * (1 + event.getDeltaY() / 64));
+    }
 
     @FXML
     public void lightVectorDefault(Event event) {
@@ -154,7 +162,7 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private void mouseMoved(MouseEvent mouseEvent) {
         mouseLight.setPosition(new Vertex(
-                mouseEvent.getX(), mouseEvent.getY(), 50
+                mouseEvent.getX(), mouseEvent.getY(), mouseLight.getZ()
         ));
         Reaction reaction = GK1.model.mouseMoved(mouseEvent);
 
@@ -212,7 +220,7 @@ public class FXMLDocumentController implements Initializable {
         LightSource light1 = new LightSource(
                 new Vertex(0, 0),
                 0,
-                32d,
+                16d,
                 new Helicopter(123),
                 new PoliceHeadlights(1)
         );
@@ -220,14 +228,14 @@ public class FXMLDocumentController implements Initializable {
         LightSource light2 = new LightSource(
                 new Vertex(0, 0),
                 0xff_ff_aa_33,
-                16d,
+                8d,
                 new Helicopter(456)
         );
 
         LightSource light3 = new LightSource(
                 new Vertex(0, 0),
                 0,
-                8d,
+                4d,
                 new Helicopter(1293),
                 new PoliceHeadlights(23)
         );

@@ -16,7 +16,7 @@ public class LightSource {
 
     private Vertex position;
     private int light;
-    private double intensity = 16d;
+    private double intensity;
     private PositionAnimator positionAnimator;
     private ColorAnimator colorAnimator;
 
@@ -35,19 +35,12 @@ public class LightSource {
         this.colorAnimator = colorAnimator;
     }
 
+    public void setZ(double z) {
+        position.setZ(z);
+    }
+
     public double getZ() {
-        return getPosition().getZ();
-    }
-
-    public LightSource(Vertex position, int light) {
-        this.position = position;
-        this.light = light;
-    }
-
-    public LightSource(Vertex position, int light, double intensity) {
-        this.position = position;
-        this.light = light;
-        this.intensity = intensity;
+        return position.getZ();
     }
 
     public Vertex getPosition() {

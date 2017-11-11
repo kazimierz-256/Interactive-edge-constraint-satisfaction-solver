@@ -362,7 +362,9 @@ public class Polygon implements Drawable {
                     ArgbHelper.fromColor(
                             artificialLightColor
                     ),
-                    2d * Math.log(100000 * 100000)
+                    2d * Math.log(100000 * 100000),
+                    null,
+                    null
             ));
         } else {
             lights.addAll(model.getLightsList());

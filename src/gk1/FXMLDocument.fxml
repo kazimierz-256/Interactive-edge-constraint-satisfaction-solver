@@ -151,7 +151,7 @@
                 </Accordion>
                 <AnchorPane minHeight="0.0" minWidth="0.0">
                     <children>
-                        <Canvas fx:id="drawing" height="600" onMouseDragged="#mouseDrag" onMouseMoved="#mouseMoved" onMousePressed="#mousePressed" onMouseReleased="#mouseReleased" width="600" />
+                        <Canvas fx:id="drawing" height="600" onMouseDragged="#mouseDrag" onMouseMoved="#mouseMoved" onMousePressed="#mousePressed" onMouseReleased="#mouseReleased" onScroll="#mouseScroll"  width="600" />
                     </children>
                 </AnchorPane>
             </items>

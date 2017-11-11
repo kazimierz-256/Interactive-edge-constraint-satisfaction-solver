@@ -73,6 +73,7 @@ public class Texture {
 
         N.add(T);
         N.add(B);
+        N.z *= 1;
 
         double resultingRed = 0;
         double resultingGreen = 0;
@@ -89,8 +90,7 @@ public class Texture {
             double dotProduct = N.dotProductNormalized(L);
 
             // personal touch :)
-            dotProduct *= dotProduct;
-            dotProduct *= dotProduct * light.getIntensity() / Math.max(1d, Math.log(L.getSquareLength()));
+            dotProduct *= light.getIntensity() / Math.max(1d, Math.log(L.getSquareLength()));
 
             if (dotProduct > 0d) {
                 resultingRed += (dotProduct * ArgbHelper.getRed(lightColor)) * ArgbHelper.getRed(texturePixel);

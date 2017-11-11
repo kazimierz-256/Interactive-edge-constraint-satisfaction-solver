@@ -31,7 +31,7 @@ public class Helicopter implements PositionAnimator {
         this.random = new Random(seed);
         primaryRadius = 100 + 100 * random.nextDouble();
         secondaryRadius = 30 + 20 * random.nextDouble();
-        primaryHeight = 10 + 40 * random.nextDouble();
+        primaryHeight = 100 + 70 * random.nextDouble();
         secondaryHeight = 20 + 10 * random.nextDouble();
         initialX = 200 + 10 * random.nextDouble();
         initialY = 200 + 10 * random.nextDouble();

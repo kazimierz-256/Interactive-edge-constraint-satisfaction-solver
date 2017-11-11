@@ -5,6 +5,7 @@
  */
 package gk1;
 
+import gk1.textures.ArgbHelper;
 import java.awt.image.BufferedImage;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.canvas.Canvas;
@@ -238,14 +239,19 @@ public class Viewer {
     public void draw(LightSource light) {
         double x = light.getPosition().getX();
         double y = light.getPosition().getY();
-        double radius = light.getPosition().getZ() / 10;
+        double radius = light.getPosition().getZ() / 2;
         Paint backupPaint = graphicsContext.getStroke();
-        graphicsContext.setStroke(Color.BLACK);
-        graphicsContext.strokeOval(x - radius / 2, y - radius / 2, radius, radius);
-        graphicsContext.setStroke(Color.WHITE);
-        radius *= 1.1d;
+        double backupWidth = graphicsContext.getLineWidth();
+        int color = light.getLightColor();
+        graphicsContext.setLineWidth(2);
+        graphicsContext.setStroke(Color.rgb(
+                ArgbHelper.getRed(color),
+                ArgbHelper.getGreen(color),
+                ArgbHelper.getBlue(color)
+        ));
         graphicsContext.strokeOval(x - radius / 2, y - radius / 2, radius, radius);
         graphicsContext.setStroke(backupPaint);
+        graphicsContext.setLineWidth(backupWidth);
     }
 
     public void draw(Vertex vertex) {
