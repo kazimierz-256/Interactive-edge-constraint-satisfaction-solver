@@ -19,7 +19,7 @@ public class Texture {
     private CachedImage background;
     private CachedImage normals;
     private CachedImage heights;
-    private static final double heightScale = 1d / 128;
+    private static final double heightScale = 1d / 32d;
 
     public static Texture getDefault() {
 // pizza https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Pepperoni_pizza.jpg/320px-Pepperoni_pizza.jpg
@@ -73,7 +73,9 @@ public class Texture {
 
         N.add(T);
         N.add(B);
-        N.z *= 1;
+        if (N.x == 0 && N.y == 0 && N.z > .9d) {
+            int ok = 9;
+        }
 
         double resultingRed = 0;
         double resultingGreen = 0;
