@@ -225,10 +225,16 @@ public class Model {
                     true
             );
             ((TextField) GK1.accessScene.lookup("#normalURL")).setText(normals.getUrl());
+        } else if (normals.getType() == CachedImage.textureType.mouseBump) {
+
+            ((RadioButton) GK1.accessScene.lookup("#normalMouseBump")).setSelected(
+                    true
+            );
         }
 
         // displacement settings
         CachedImage displacement = polygonTexture.getHeights();
+
         if (displacement.getType() == CachedImage.textureType.color) {
 
             ((RadioButton) GK1.accessScene.lookup("#displacementConstant")).setSelected(
