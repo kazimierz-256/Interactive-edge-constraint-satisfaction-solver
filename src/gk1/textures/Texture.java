@@ -16,10 +16,18 @@ import java.util.ArrayList;
  */
 public class Texture {
 
+    public double getHeightScale() {
+        return heightScale;
+    }
+
+    public void setHeightScale(double aHeightScale) {
+        heightScale = aHeightScale;
+    }
+
     private CachedImage background;
     private CachedImage normals;
     private CachedImage heights;
-    private static final double heightScale = 1d / 32d;
+    private double heightScale = 1d / 32d;
 
     public static Texture getDefault() {
 // pizza https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Pepperoni_pizza.jpg/320px-Pepperoni_pizza.jpg
@@ -54,18 +62,19 @@ public class Texture {
     public int getPixel(double leftmost, double bottommost, double z, int x, int y, ArrayList<LightSource> lights) {
         // lambert reflectance model
         int texturePixel = background.getPixel(x, y);
-        int normalPixel = normals.getPixel(x, y);
-        double pixelComputedHeight = ArgbHelper.getBlue(heights.getPixel(x, y)) * heightScale;
-        double dxHeight = ArgbHelper.getBlue(heights.getPixel(x + 1, y)) * heightScale - pixelComputedHeight;
-        double dyHeight = ArgbHelper.getBlue(heights.getPixel(x, y + 1)) * heightScale - pixelComputedHeight;
+        EuclideanVector N = normals.getNormal(x, y, leftmost, bottommost);
+        double pixelComputedHeight = ArgbHelper.getBlue(heights.getPixel(x, y)) * getHeightScale();
+        double dxHeight = ArgbHelper.getBlue(heights.getPixel(x + 1, y)) * getHeightScale() - pixelComputedHeight;
+        double dyHeight = ArgbHelper.getBlue(heights.getPixel(x, y + 1)) * getHeightScale() - pixelComputedHeight;
 
         // -y since the coordinates are flipped
-        EuclideanVector N = new EuclideanVector(
-                (127 - ArgbHelper.getRed(normalPixel)) / 128d,
-                (ArgbHelper.getGreen(normalPixel) - 127) / 128d,
-                ArgbHelper.getBlue(normalPixel) / 255d
-        );
-
+//        EuclideanVector N = new EuclideanVector(
+//                (127 - ArgbHelper.getRed(normalPixel)) / 128d,
+//                (ArgbHelper.getGreen(normalPixel) - 127) / 128d,
+//                ArgbHelper.getBlue(normalPixel) / 255d
+//        );
+        N.x = -N.x;
+        N.y = -N.y;
         EuclideanVector T = new EuclideanVector(dxHeight, 0d, -N.x * dxHeight);
         EuclideanVector B = new EuclideanVector(0d, dyHeight, -N.y * dyHeight);
 
@@ -73,9 +82,6 @@ public class Texture {
 
         N.add(T);
         N.add(B);
-        if (N.x == 0 && N.y == 0 && N.z > .9d) {
-            int ok = 9;
-        }
 
         double resultingRed = 0;
         double resultingGreen = 0;
@@ -89,9 +95,10 @@ public class Texture {
                     (bottommost + y) - light.getPosition().getY(),
                     light.getPosition().getZ() - (z + pixelComputedHeight)
             );
+
             double dotProduct = N.dotProductNormalized(L);
 
-            // personal touch :)
+            // personal touch
             dotProduct *= light.getIntensity() / Math.max(1d, Math.log(L.getSquareLength()));
 
             if (dotProduct > 0d) {

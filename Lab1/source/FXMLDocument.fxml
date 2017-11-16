@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.canvas.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="600" prefWidth="600" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gk1.FXMLDocumentController">
+    <children>
+        <Canvas fx:id="drawing" width="600" height="600" onMouseDragged="#mouseDrag" onMouseMoved="#mouseMoved" onMousePressed="#mousePressed" onMouseReleased="#mouseReleased" />
+        <CheckBox fx:id="automaticRelations" text="Toggle automatic snap" onSelectedChange="#automaticToggle" />
+    </children>
+</AnchorPane>

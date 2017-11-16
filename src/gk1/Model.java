@@ -10,7 +10,16 @@ import gk1.textures.Texture;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javafx.event.ActionEvent;
-import javafx.scene.control.*;
+import javafx.scene.control.Accordion;
+import javafx.scene.control.ColorPicker;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
 
 /**
@@ -235,6 +244,10 @@ public class Model {
 
         ((Accordion) GK1.accessScene.lookup("#mainAccordion")).setExpandedPane(
                 (TitledPane) GK1.accessScene.lookup("#polygonTile")
+        );
+
+        ((Slider) GK1.accessScene.lookup("#displacementScale")).setValue(
+                Math.pow(polygonTexture.getHeightScale(), 1d / 4d)
         );
 
     }

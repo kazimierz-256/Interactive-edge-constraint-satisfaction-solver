@@ -97,8 +97,10 @@
                                                         <RadioButton fx:id="displacementConstant" mnemonicParsing="false" onAction="#displacementVectorDefault" text="None" toggleGroup="$heightMap" />
                                                         <Label text="[0, 0, 0]" GridPane.columnIndex="1" />
                                                         <TextField fx:id="displacementURL" disable="${displacementNone.selected}" onAction="#displacementUrlChange" promptText="URL of height map" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
                                                     </children>
                                                 </GridPane>
+                                                <Slider fx:id="displacementScale" GridPane.rowIndex="4" minWidth="250" max="1" value=".7" onValueChange="#displacementScaleChange"  showTickLabels="true" showTickMarks="true" />
                                                 <GridPane GridPane.columnIndex="1" GridPane.rowIndex="2">
                                                     <columnConstraints>
                                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -115,12 +117,13 @@
                                                             </toggleGroup>
                                                         </RadioButton>
                                                         <RadioButton fx:id="normalImage" mnemonicParsing="false" onAction="#normalUrlChange" selected="true" text="Normal map" toggleGroup="$normalMap" GridPane.rowIndex="1" />
+                                                        <RadioButton fx:id="normalMouseBump" mnemonicParsing="false" onAction="#normalMouseBumpChange" text="Mouse bump" toggleGroup="$normalMap" GridPane.rowIndex="3" />
                                                         <Label text="[0, 0, 1]" GridPane.columnIndex="1" />
-                                                        <TextField fx:id="normalURL" disable="${normalConstant.selected}" onAction="#normalUrlChange" promptText="URL of normal map" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                        <TextField fx:id="normalURL" disable="${!normalImage.selected}" onAction="#normalUrlChange" promptText="URL of normal map" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                     </children>
                                                 </GridPane>
-                                                <Label text="Vectors to light source" wrapText="true" GridPane.rowIndex="4" />
-                                                <GridPane GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                                <Label text="Vectors to light source" wrapText="true" GridPane.rowIndex="5" />
+                                                <GridPane GridPane.columnIndex="1" GridPane.rowIndex="5">
                                                     <columnConstraints>
                                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />

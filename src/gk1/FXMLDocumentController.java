@@ -11,15 +11,27 @@ import gk1.textures.ArgbHelper;
 import gk1.textures.CachedImage;
 import gk1.textures.Texture;
 import java.net.URL;
-import java.util.*;
-import javafx.animation.*;
-import javafx.event.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.ResourceBundle;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.*;
+import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.control.*;
-import javafx.scene.input.*;
+import javafx.scene.control.ColorPicker;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
+import javafx.scene.control.TitledPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 
 /**
  * FXML Controller class
@@ -55,6 +67,17 @@ public class FXMLDocumentController implements Initializable {
     private TitledPane polygonTile;
 
     @FXML
+    public void displacementScaleChange(ObservableValue<? extends Number> ov, Number old_val, Number new_val) {
+        if (GK1.model.activePolygon == null) {
+            return;
+        }
+        double scale = (double) new_val;
+        scale *= scale;
+        scale *= scale;
+        GK1.model.activePolygon.getTexture().setHeightScale(scale);
+    }
+
+    @FXML
     public void mouseScroll(ScrollEvent event) {
         mouseLight.setZ(mouseLight.getZ()
                 + Math.sqrt(Math.abs(mouseLight.getZ())) * (event.getDeltaY() / 16)
@@ -84,6 +107,16 @@ public class FXMLDocumentController implements Initializable {
         }
         GK1.model.activePolygon.getTexture().setNormals(new CachedImage(
                 0x00_7f_7f_ff
+        ));
+    }
+
+    @FXML
+    public void normalMouseBumpChange(Event event) {
+        if (GK1.model.activePolygon == null) {
+            return;
+        }
+        GK1.model.activePolygon.getTexture().setNormals(new CachedImage(
+                new Vertex(100, 100)
         ));
     }
 
@@ -173,6 +206,7 @@ public class FXMLDocumentController implements Initializable {
         } else {
             drawing.setCursor(Cursor.DEFAULT);
         }
+
     }
 
     @FXML
@@ -208,14 +242,26 @@ public class FXMLDocumentController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
 
-        Polygon newPolygon = new Polygon(
-                "Default",
+        Polygon newPolygon1 = new Polygon(
+                "Default quadrilateral",
                 false,
                 Arrays.asList(
-                        new Vertex(100, 100, true),
+                        new Vertex(300, 100, true),
                         new Vertex(650, 50),
                         new Vertex(600, 500),
-                        new Vertex(150, 550)),
+                        new Vertex(350, 550)
+                ),
+                Texture.getDefault()
+        );
+
+        Polygon newPolygon2 = new Polygon(
+                "Default triangle",
+                false,
+                Arrays.asList(
+                        new Vertex(200, 300),
+                        new Vertex(450, 150),
+                        new Vertex(300, 300)
+                ),
                 Texture.getDefault()
         );
 
@@ -238,7 +284,8 @@ public class FXMLDocumentController implements Initializable {
         GK1.model.registerLight(light1);
         GK1.model.registerLight(light2);
         GK1.model.registerLight(mouseLight);
-        GK1.model.registerPolygon(newPolygon);
+        GK1.model.registerPolygon(newPolygon1);
+        GK1.model.registerPolygon(newPolygon2);
         GK1.viewer = new Viewer(drawing, 600, 600);
 
         long startedTime = System.currentTimeMillis();

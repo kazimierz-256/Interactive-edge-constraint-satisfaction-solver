@@ -5,24 +5,15 @@
  */
 package gk1;
 
-import static gk1.GK1.model;
-import gk1.areas.Area;
-import gk1.textures.ArgbHelper;
-import gk1.textures.CachedImage;
-import gk1.textures.Texture;
-import java.awt.image.BufferedImage;
 import static java.lang.Math.sqrt;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
+import java.util.Arrays;
 import javafx.event.ActionEvent;
 import javafx.scene.Cursor;
-import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
 
 /**
  *
@@ -30,182 +21,14 @@ import javafx.scene.paint.Color;
  */
 public class Polygon implements Drawable {
 
-    private Vertex rememberedMovedFirst;
-
-    public boolean isConvex() {
-        Vertex last = vertices.get(vertices.size() - 1);
-        Vertex first = vertices.get(0);
-        Vertex second = vertices.get(1);
-        double dx1 = first.getX() - last.getX();
-        double dy1 = first.getY() - last.getY();
-        double dx2 = second.getX() - first.getX();
-        double dy2 = second.getY() - first.getY();
-        double initialCrossProduct = Math.signum(dx1 * dy2 - dy1 * dx2);
-
-        if (initialCrossProduct == 0) {
-            return false;
-        }
-
-        for (int i = 0, max = vertices.size() - 1; i < max; i++) {
-            last = first;
-            first = second;
-            second = vertices.get((i + 2) % vertices.size());
-
-            dx1 = first.getX() - last.getX();
-            dy1 = first.getY() - last.getY();
-            dx2 = second.getX() - first.getX();
-            dy2 = second.getY() - first.getY();
-
-            if (initialCrossProduct != Math.signum(dx1 * dy2 - dy1 * dx2)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    boolean hasTouched(MouseEvent event) {
-        return this.mousePressed(event).hasTouched;
-    }
-
-    Polygon clip(Polygon polygon) {
-        // assuming the current polygon is convex, the polygon in the parameter is not necessarily
-
-        ArrayList<Vertex>[] inputOutput = new ArrayList[2];
-
-        int input = 0;
-        int output = 1;
-        int pIndex;
-        Boolean isOutside = false;
-        Vertex pp;
-        Vertex p;
-        Vertex inside;
-        Segment e;
-
-        // for i == 0 początkowa iteracja która różni się od właściwej tylko tym, że input jest w tej chwili polygon oraz clipVertexIndex jest równy zeru
-        // ciało pętli jest lepiej wyjaśniane
-        if (polygon.vertices.size() > 0 && vertices.size() > 0) {
-            // odosobniona część pętli gdzie clipVertexIndex == clipPolygon.Length - 1
-            e = new Segment(vertices.get(vertices.size() - 1), vertices.get(0));
-            inputOutput[output] = new ArrayList<>((int) (polygon.vertices.size() * 1.2));
-
-            pp = polygon.vertices.get(polygon.vertices.size() - 1);
-            inside = vertices.get(1);
-            for (pIndex = 0; pIndex < polygon.vertices.size(); pIndex++) {
-                p = polygon.vertices.get(pIndex);
-                if (PolygonAlgorithms.IsSameSide(p, inside, e)) {
-                    isOutside = PolygonAlgorithms.IsOutside(p, inside, e);
-                    if (isOutside && !PolygonAlgorithms.IsSameSide(pp, inside, e)) {
-                        inputOutput[output].add(PolygonAlgorithms.GetIntersectionVertexFast(new Segment(pp, p), e));
-                    }
-
-                    inputOutput[output].add(p);
-                } else if (PolygonAlgorithms.IsSameSideExclusive(pp, inside, e)) {
-                    inputOutput[output].add(PolygonAlgorithms.GetIntersectionVertexFast(new Segment(pp, p), e));
-                }
-
-                pp = p;
-            }
-
-            // pętla właściwa
-            for (int clipVertexIndex = 0; clipVertexIndex < vertices.size() - 1 && inputOutput[output].size() > 0; clipVertexIndex++) {
-                e = new Segment(vertices.get(clipVertexIndex), vertices.get(clipVertexIndex + 1));
-                // zamiana input z output bez zmiennej pomocniczej
-                input = output;
-                output = 1 - input;
-                // zadbałem o zaalokowanie rozsądnie dużej pamięci na wynik
-                inputOutput[output] = new ArrayList<>((int) (inputOutput[input].size() * 1.2));
-
-                pp = inputOutput[input].get(inputOutput[input].size() - 1);
-                // punkt w środku wielokąta wypukłego
-                inside = vertices.get((clipVertexIndex < vertices.size() - 2) ? clipVertexIndex + 2 : 0);
-                for (pIndex = 0; pIndex < inputOutput[input].size(); pIndex++) {
-                    p = inputOutput[input].get(pIndex);
-                    if (PolygonAlgorithms.IsSameSide(p, inside, e)) {
-                        isOutside = PolygonAlgorithms.IsOutside(p, inside, e);
-                        // isOutside gwarantuje, że p nie leży na prostej wyznaczonej przez krawędź e
-                        if (isOutside && !PolygonAlgorithms.IsSameSide(pp, inside, e)) {
-                            inputOutput[output].add(PolygonAlgorithms.GetIntersectionVertexFast(new Segment(pp, p), e));
-                        }
-
-                        inputOutput[output].add(p);
-                    } else if (PolygonAlgorithms.IsSameSideExclusive(pp, inside, e)) {
-                        // gdy pp leży na prostej wyznaczonej przez krawędź e, to już ten punkt musiałem dodać w poprzedniej iteracji w instrukcji warunkowej powyżej
-                        // stąd wyspecjalizowana funkcja IsSameSideExclusive w której sprytnie i szybko sprawdzam tylko > 0 zamiast >= 0
-                        inputOutput[output].add(PolygonAlgorithms.GetIntersectionVertexFast(new Segment(pp, p), e));
-                    }
-
-                    pp = p;
-                }
-            }
-
-        }
-
-        return new Polygon(
-                polygon.name,
-                polygon.automaticRelations,
-                inputOutput[output],
-                polygon.getTexture()
-        );
-    }
-
-    public Boolean getAutomaticRelations() {
-        return automaticRelations;
-    }
-
-    public void setAutomaticRelations(Boolean automaticRelations) {
-        this.automaticRelations = automaticRelations;
-    }
-
-    public Texture getTexture() {
-        return texture;
-    }
-
-    public void setTexture(Texture texture) {
-        this.texture = texture;
-    }
-
-    void setArtificialLight(boolean artificial) {
-        isArtificialLight = artificial;
-    }
-
-    public enum ActionState {
-
-        moving,
-        idle
-    }
-
-    private enum MoveEntity {
-
-        movingVertex,
-        movingSegment,
-        movingPolygon,
-        none
-    }
-
-    private boolean isArtificialLight = false;
-    private Texture texture;
-    private boolean automaticRelations = false;
-    private MoveEntity moveEntity;
-//    private Polygon backup;
-    private Vertex moveVertex;
-    private Segment moveSegment;
-
-    private ActionState state = ActionState.idle;
-    private MouseEvent rememberedMouseClick;
-
-    private double clickThreshold = 300;
-    private ArrayList<Vertex> vertices;
-    private ArrayList<Segment> segments;
-    private String name;
-
     @Override
     public double getZ() {
-        return vertices.get(0).getZ();
+        return z;
     }
 
+    @Override
     public Reaction toggleAutomaticRelations(Boolean isAutomatic) {
-        setAutomaticRelations(isAutomatic);
+        automaticRelations = isAutomatic;
         return new Reaction(true, false, null);
     }
 
@@ -227,179 +50,52 @@ public class Polygon implements Drawable {
         return true;
     }
 
-    private void drawTexture(Viewer viewer, Model context) {
-        // start already with the first vertex
-        double leftmost = vertices.get(0).getXint();
-        double topmost = vertices.get(0).getYint();
-        double rightmost = leftmost;
-        double bottommost = topmost;
-        double x, y;
+    public enum ActionState {
 
-        Vertex lower, upper, tmp;
-        for (int i = 1, max = vertices.size(); i < max; i++) {
-            tmp = vertices.get(i);
-            x = tmp.getXint();
-            y = tmp.getYint();
-
-            if (x < leftmost) {
-                leftmost = x;
-            } else if (x > rightmost) {
-                rightmost = x;
-            }
-
-            if (y > topmost) {
-                topmost = y;
-            } else if (y < bottommost) {
-                bottommost = y;
-            }
-        }
-
-        int width = (int) (rightmost - leftmost);
-        int height = (int) (topmost - bottommost);
-
-        if (width <= 0 || height <= 0) {
-            return;
-        }
-
-        int[] pixels = new int[width * height];
-
-        // bucketsort edges
-        LinkedList<ActiveEdge>[] edgeTable = new LinkedList[height + 1];
-        // initialize the array
-        for (int i = 0; i < edgeTable.length; i++) {
-            edgeTable[i] = new LinkedList<>();
-        }
-
-        for (int i = 0, max = segments.size(); i < max; i++) {
-            lower = segments.get(i).getBeginning();
-            upper = segments.get(i).getEnd();
-
-            if (upper.getYint() == lower.getYint()) {
-                continue;
-            } else if (lower.getY() > upper.getY()) {
-                tmp = lower;
-                lower = upper;
-                upper = tmp;
-            }
-            // now the following is true: lower.y <= upper.y
-
-            // make sure the index is always correctly assigned
-            int indexAboveBottommost = (int) (lower.getYint() - bottommost);
-            // watch out for division by zero
-            //dx/dy
-            double m_inverse = ((double) (upper.getXint() - lower.getXint()))
-                    / (upper.getYint() - lower.getYint());
-
-            edgeTable[indexAboveBottommost].add(
-                    new ActiveEdge(
-                            upper.getYint(),
-                            lower.getXint(),
-                            m_inverse,
-                            Math.max(upper.getX(), lower.getX())
-                    )
-            );
-        }
-
-        LinkedList<ActiveEdge> activeEdges = new LinkedList<>();
-
-        ArrayList<Scanline> scanlines = new ArrayList<>(height);
-
-        // fill a bufferedimage with pixels using the texture field
-        for (int localHeight = 0; localHeight < height; localHeight++) {
-            if (!edgeTable[localHeight].isEmpty()) {
-                //https://docs.oracle.com/javase/7/docs/api/java/util/LinkedList.html#fields_inherited_from_class_java.util.AbstractList
-                // constant time insertion
-                activeEdges.addAll(edgeTable[localHeight]);
-            }
-            activeEdges.sort((edge1, edge2) -> Double.compare(edge1.x, edge2.x));
-
-            // sorted, now paint!
-            boolean seekingPair = false;
-            ActiveEdge previousEdge = null;
-
-            for (ActiveEdge edge : activeEdges) {
-                if (seekingPair) {
-                    if (Double.isInfinite(edge.x)) {
-                        return;
-                    }
-
-                    // paint all the way from previous to current edge
-                    int from = (int) (previousEdge.x - leftmost);
-                    int to = (int) (edge.x - leftmost);
-                    scanlines.add(new Scanline(from, to, localHeight));
-                    seekingPair = false;
-                } else {
-                    previousEdge = edge;
-                    seekingPair = true;
-                }
-            }
-
-            // increment x coordinates and remove edges below the scanline!
-            LinkedList<ActiveEdge> toSpare = new LinkedList<>();
-
-            for (ActiveEdge edge : activeEdges) {
-                // jeśli edge.y_max <= 1 + localHeight + bottommost
-                // to należy usunąć
-                if (edge.y_max > 1 + localHeight + bottommost) {
-                    edge.x += edge.m_inverse;
-                    toSpare.add(edge);
-                }
-
-            }
-
-            activeEdges = toSpare;
-
-        }
-
-        final double z = getZ();
-        final double leftmostf = leftmost;
-        final double bottommostf = bottommost;
-        ArrayList<LightSource> lights = new ArrayList<>();
-
-        if (isArtificialLight) {
-            Color artificialLightColor = ((ColorPicker) GK1.accessScene.lookup("#lightColor")).getValue();
-            lights.add(new LightSource(
-                    new Vertex(0, 0, 100000),
-                    ArgbHelper.fromColor(
-                            artificialLightColor
-                    ),
-                    2d * Math.log(100000 * 100000),
-                    null,
-                    null
-            ));
-        } else {
-            lights.addAll(model.getLightsList());
-        }
-
-        // twice the framerate :)
-        scanlines.stream().parallel().forEach((scanline) -> {
-            for (int j = scanline.from; j < scanline.to; j++) {
-                pixels[scanline.localHeight * width + j] = getTexture().getPixel(
-                        leftmostf, bottommostf, z, j, scanline.localHeight, lights);
-            }
-        });
-
-        BufferedImage generatedTexture = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        generatedTexture.getRaster().setDataElements(0, 0, width, height, pixels);
-
-        // finally paint the image
-        viewer.drawImage(generatedTexture, leftmost, bottommost, width, height);
+        moving,
+        idle
     }
 
-    public Polygon(String name, Boolean automaticRelations, Collection<Vertex> vertices, Texture texture) {
+    private enum MoveEntity {
+
+        movingVertex,
+        movingSegment,
+        movingPolygon,
+        none
+    }
+
+    private Boolean automaticRelations = false;
+    private MoveEntity moveEntity;
+    private Polygon backup;
+    private Vertex moveVertex;
+    private Segment moveSegment;
+
+    private ActionState state = ActionState.idle;
+    private MouseEvent rememberedMouseClick;
+
+    private double clickThreshold = 300;
+    private ArrayList<Vertex> vertices;
+    private ArrayList<Segment> segments;
+    private String name;
+    private double z;
+
+    public Polygon(String name, double z, Vertex... vertices) {
+        this(name, z, new ArrayList<>(Arrays.asList(vertices)));
+    }
+
+    public Polygon(String name, double z, ArrayList<Vertex> vertices) {
         if (vertices.size() < 3) {
             //throw new Exception("A polygon has to have at least three vertices.");
             return;
         }
+
         this.name = name;
-        this.automaticRelations = automaticRelations;
-        this.texture = texture;
         this.vertices = new ArrayList<>();
         this.segments = new ArrayList<>();
+        this.z = z;
 
         vertices.forEach((vertex) -> {
-            Vertex cloned = vertex.cloneWithoutSegments();
-            this.vertices.add(cloned);
+            this.vertices.add(vertex.cloneWithoutSegments());
         });
 
         int max = this.vertices.size();
@@ -415,24 +111,21 @@ public class Polygon implements Drawable {
     }
 
     @Override
-    public void draw(Viewer viewer, Model context) {
-        drawTexture(viewer, model);
-
+    public void draw(Viewer viewer) {
         segments.forEach((segment) -> {
-            viewer.draw(segment, getAutomaticRelations());
+            viewer.draw(segment, automaticRelations);
         });
-
         vertices.forEach((vertex) -> {
             viewer.draw(vertex);
         });
-
     }
 
-//    private void makeBackupOfPolygon() {
-//        // be careful, line restrictions are not copied over
-//        // created lines will become loose!
-//        backup = new Polygon(name, automaticRelations, vertices);
-//    }
+    private void makeBackupOfPolygon() {
+        // be careful, line restrictions are not copied over
+        // created lines will become loose!
+        backup = new Polygon(name, z, vertices);
+    }
+
     @Override
     public Reaction mouseMoved(MouseEvent mouseEvent) {
         Reaction reaction = new Reaction();
@@ -459,19 +152,6 @@ public class Polygon implements Drawable {
             if (!getNearbyVertices(position).isEmpty()) {
                 reaction.setDesiredCursor(Cursor.CROSSHAIR);
             }
-
-            if (texture.getNormals().getType() == CachedImage.textureType.mouseBump) {
-
-                Vertex mousePosition = new Vertex(
-                        position.getX(),// - vertices.get(0).getX(),
-                        position.getY(),// - vertices.get(0).getY(),
-                        0
-                );
-                texture.getNormals().setMousePosition(
-                        mousePosition
-                );
-            }
-
             return reaction;
         }
         return reaction;
@@ -486,7 +166,6 @@ public class Polygon implements Drawable {
         if (capturedVertices.isEmpty() && !insidePolygon) {
             return reaction;
         }
-        reaction.hasTouched = true;
         if (capturedVertices.size() > 0) {
             // move vertex
             moveEntity = MoveEntity.movingVertex;
@@ -497,8 +176,7 @@ public class Polygon implements Drawable {
             moveEntity = MoveEntity.movingPolygon;
         }
         rememberedMouseClick = mouseEvent;
-//        makeBackupOfPolygon();
-        rememberedMovedFirst = vertices.get(0).cloneWithoutSegments();
+        makeBackupOfPolygon();
         this.state = ActionState.moving;
         return reaction;
     }
@@ -507,12 +185,10 @@ public class Polygon implements Drawable {
     public Reaction mouseReleased(MouseEvent mouseEvent) {
         Reaction reaction = new Reaction();
         this.state = ActionState.idle;
-
         // TODO: create a backup of polygon in case there is no possibility
-        if (getAutomaticRelations() && moveVertex != null) {
+        if (automaticRelations) {
             reaction.mergeShouldRender(
                     trySnapEdges());
-
             reaction.mergeShouldRender(
                     tryMoveVertexExactly(moveVertex, moveVertex, true));
         }
@@ -521,18 +197,13 @@ public class Polygon implements Drawable {
     }
 
     public boolean movePolygon(MouseEvent mouseEvent) {
-        double displacementX = rememberedMovedFirst.getX() - vertices.get(0).getX();
-        double displacementY = rememberedMovedFirst.getY() - vertices.get(0).getY();
-
         for (int i = 0, max = vertices.size(); i < max; i++) {
             vertices.get(i).setX(
-                    displacementX + vertices.get(i).getX()
-                    + mouseEvent.getX() - rememberedMouseClick.getX()
-            );
+                    backup.vertices.get(i).getX()
+                    + mouseEvent.getX() - rememberedMouseClick.getX());
             vertices.get(i).setY(
-                    displacementY + vertices.get(i).getY()
-                    + mouseEvent.getY() - rememberedMouseClick.getY()
-            );
+                    backup.vertices.get(i).getY()
+                    + mouseEvent.getY() - rememberedMouseClick.getY());
         }
         return true;
     }
@@ -577,6 +248,7 @@ public class Polygon implements Drawable {
     }
 
     @Override
+
     public ArrayList<MenuItem> buildContextMenu(MouseEvent event) {
         ArrayList<MenuItem> menuItems = new ArrayList<>();
 
@@ -590,29 +262,27 @@ public class Polygon implements Drawable {
             MenuItem menuItem = new MenuItem("Add vertex in the middle");
             menuItem.setOnAction((ActionEvent e) -> {
                 addVertexInbetween(segment);
-//                GK1.viewer.drawLastModel();
+                GK1.model.draw(GK1.viewer);
             });
             menu.getItems().add(menuItem);
 
             // horizontal segment
-            if (segment.getConstraint() != Segment.segmentConstraint.horizontal
-                    && segment.isSafeToRestrictHorizontal()) {
+            if (segment.isSafeToRestrictHorizontal()) {
                 menuItem = new MenuItem("Make horizontal if possible");
                 menuItem.setOnAction((ActionEvent e) -> {
                     if (tryHorizontal(segment)) {
-//                        GK1.viewer.drawLastModel();
+                        GK1.model.draw(GK1.viewer);
                     }
                 });
                 menu.getItems().add(menuItem);
             }
 
             // vertical segment
-            if (segment.getConstraint() != Segment.segmentConstraint.vertical
-                    && segment.isSafeToRestrictVertical()) {
+            if (segment.isSafeToRestrictVertical()) {
                 menuItem = new MenuItem("Make vertical if possible");
                 menuItem.setOnAction((ActionEvent e) -> {
                     if (tryVertical(segment)) {
-//                        GK1.viewer.drawLastModel();
+                        GK1.model.draw(GK1.viewer);
                     }
                 });
                 menu.getItems().add(menuItem);
@@ -622,10 +292,9 @@ public class Polygon implements Drawable {
             menuItem = new MenuItem("Fix length if possible");
             menuItem.setOnAction((ActionEvent e) -> {
                 if (tryFixedLength(segment)) {
-//                    GK1.viewer.drawLastModel();
+                    GK1.model.draw(GK1.viewer);
                 }
             });
-
             menu.getItems().add(menuItem);
             if (segment.getConstraint() != Segment.segmentConstraint.free) {
 
@@ -633,7 +302,7 @@ public class Polygon implements Drawable {
                 menuItem = new MenuItem("Free");
                 menuItem.setOnAction((ActionEvent e) -> {
                     segment.restrictFree();
-//                    GK1.viewer.drawLastModel();
+                    GK1.model.draw(GK1.viewer);
                 });
                 menu.getItems().add(menuItem);
 
@@ -652,7 +321,7 @@ public class Polygon implements Drawable {
                 menuItem = new MenuItem("Remove");
                 menuItem.setOnAction((ActionEvent e) -> {
                     removeVertex(vertex);
-//                    GK1.viewer.drawLastModel();
+                    GK1.model.draw(GK1.viewer);
                 });
                 menu.getItems().add(menuItem);
             }
@@ -662,7 +331,7 @@ public class Polygon implements Drawable {
                     vertex.isFixed() ? "Unfreeze" : "Freeze"));
             menuItem.setOnAction((ActionEvent e) -> {
                 vertex.setFixed(!vertex.isFixed());
-//                GK1.viewer.drawLastModel();
+                GK1.model.draw(GK1.viewer);
             });
             menu.getItems().add(menuItem);
 
@@ -672,8 +341,8 @@ public class Polygon implements Drawable {
         if (!menuItems.isEmpty() || isInsidePolygon(position)) {
             MenuItem menuItem = new MenuItem("Remove polygon");
             menuItem.setOnAction((ActionEvent e) -> {
-                GK1.model.unregisterPolygon(this);
-//                GK1.viewer.drawLastModel();
+                GK1.model.unregisterDrawable(this);
+                GK1.model.draw(GK1.viewer);
             });
             menuItems.add(menuItem);
         }
