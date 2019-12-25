@@ -328,8 +328,8 @@ public class Viewer {
 
         double elapsedTimeSeconds
                 = (double) ((System.currentTimeMillis() - startTime)) / 1000d;
-        double fps = 1 / elapsedTimeSeconds;
-        graphicsContext.strokeText(String.format("%3.2f fps", fps), 10, 50);
+//        double fps = 1 / elapsedTimeSeconds;
+//        graphicsContext.strokeText(String.format("%3.2f fps", fps), 10, 50);
 
         isDrawing = false;
     }
