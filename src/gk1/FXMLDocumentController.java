@@ -5,8 +5,8 @@
  */
 package gk1;
 
-import animation.Helicopter;
-import animation.PoliceHeadlights;
+import animation.PeriodicOscillator;
+import animation.OscillatoryColourLights;
 import gk1.textures.ArgbHelper;
 import gk1.textures.CachedImage;
 import gk1.textures.Texture;
@@ -269,15 +269,15 @@ public class FXMLDocumentController implements Initializable {
                 new Vertex(0, 0),
                 0,
                 16d,
-                new Helicopter(123),
-                new PoliceHeadlights(1)
+                new PeriodicOscillator(123),
+                new OscillatoryColourLights(1)
         );
 
         LightSource light2 = new LightSource(
                 new Vertex(0, 0),
                 0xff_ff_aa_33,
                 8d,
-                new Helicopter(456)
+                new PeriodicOscillator(456)
         );
 
         GK1.model = new Model();

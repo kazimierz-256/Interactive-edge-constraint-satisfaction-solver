@@ -11,13 +11,13 @@ import java.util.Random;
  *
  * @author kazimierz
  */
-public class PoliceHeadlights implements ColorAnimator {
+public class OscillatoryColourLights implements ColorAnimator {
 
     private final Random random;
     private final double pace;
     private final double offset;
 
-    public PoliceHeadlights(int seed) {
+    public OscillatoryColourLights(int seed) {
         this.random = new Random(seed);
         pace = 1 + .7d * random.nextDouble();
         offset = 10 * random.nextDouble();

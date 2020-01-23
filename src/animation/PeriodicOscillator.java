@@ -15,7 +15,7 @@ import java.util.Random;
  *
  * @author kazimierz
  */
-public class Helicopter implements PositionAnimator {
+public class PeriodicOscillator implements PositionAnimator {
 
     private final Random random;
     private final double primaryRadius;
@@ -27,7 +27,7 @@ public class Helicopter implements PositionAnimator {
     private final double pace;
     private final double offset;
 
-    public Helicopter(int seed) {
+    public PeriodicOscillator(int seed) {
         this.random = new Random(seed);
         primaryRadius = 100 + 100 * random.nextDouble();
         secondaryRadius = 30 + 20 * random.nextDouble();
